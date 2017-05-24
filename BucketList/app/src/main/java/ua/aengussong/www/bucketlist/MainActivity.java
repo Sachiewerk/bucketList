@@ -1,15 +1,15 @@
 package ua.aengussong.www.bucketlist;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements RVAdapter.WishClickListener {
+public class MainActivity extends AppCompatActivity implements RVMainAdapter.WishClickListener {
 
     int number = 20;
-    RVAdapter adapter;
+    RVMainAdapter adapter;
     RecyclerView recyclerView;
 
     @Override
@@ -21,13 +21,14 @@ public class MainActivity extends AppCompatActivity implements RVAdapter.WishCli
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.hasFixedSize();
-        adapter = new RVAdapter(number, this);
+        adapter = new RVMainAdapter(number, this);
         recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void onWishClicked(int clickedPosition) {
-        Toast toast = Toast.makeText(this,"asdf", Toast.LENGTH_SHORT);
-        toast.show();
+        Intent intent = new Intent(MainActivity.this, ViewWishActivity.class);
+        intent.putExtra(Intent.EXTRA_TEXT, String.valueOf(clickedPosition));
+        startActivity(intent);
     }
 }

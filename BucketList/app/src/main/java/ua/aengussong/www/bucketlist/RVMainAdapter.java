@@ -7,19 +7,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.zip.Inflater;
-
 /**
  * Created by coolsmileman on 24.05.2017.
  */
 
-public class RVAdapter extends RecyclerView.Adapter<RVAdapter.WishViewHolder> {
+public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHolder> {
 
     final private WishClickListener onWishClickListener;
 
     int count;
 
-    RVAdapter(int count, WishClickListener listener){
+    RVMainAdapter(int count, WishClickListener listener){
         onWishClickListener = listener;
         this.count = count;
     }
