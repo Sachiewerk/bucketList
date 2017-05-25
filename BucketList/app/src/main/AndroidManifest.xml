@@ -16,7 +16,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ViewWishActivity"></activity>
+        <activity android:name=".ViewWishActivity" />
+        <activity android:name=".AddWishActivity"></activity>
     </application>
 
 </manifest>

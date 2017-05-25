@@ -1,11 +1,17 @@
 package ua.aengussong.www.bucketlist;
 
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.sql.Blob;
+import java.sql.Timestamp;
 
 /**
  * Created by coolsmileman on 24.05.2017.
@@ -15,11 +21,11 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
 
     final private WishClickListener onWishClickListener;
 
-    int count;
+    private Cursor cursor;
 
-    RVMainAdapter(int count, WishClickListener listener){
+    RVMainAdapter(Cursor cursor, WishClickListener listener){
         onWishClickListener = listener;
-        this.count = count;
+        this.cursor = cursor;
     }
 
     @Override
@@ -32,12 +38,33 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
 
     @Override
     public void onBindViewHolder(WishViewHolder holder, int position) {
-        holder.bind(position);
+        if(!cursor.moveToPosition(position))
+            return;
+        String title = cursor.getString(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_TITLE));
+       // byte[] image = cursor.getBlob(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_IMAGE));
+        int price = cursor.getInt(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_PRICE));
+       // int category = cursor.getInt(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_CATEGORY));
+        /*String description = cursor.getString(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_DESCRIPTION));
+        Timestamp targetDate = Timestamp.valueOf(cursor.getString(
+                cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_TARGET_DATE)));
+        Timestamp achievedDate = Timestamp.valueOf(cursor.getString(
+                cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_ACHIEVED_DATE)));*/
+
+        holder.rvWishTitle.setText(title);
+       // holder.rvWishCategory.setText(String.valueOf(category));
+        holder.rvWishPrice.setText(String.valueOf(price));
+
+      /*  BitmapFactory.Options options = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length, options);
+        holder.rvWishImage.setImageBitmap(bitmap);
+*/
+
+/*        holder.bind(position);*/
     }
 
     @Override
     public int getItemCount() {
-        return count;
+        return cursor.getCount();
     }
 
     public interface WishClickListener{
@@ -60,12 +87,12 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
 
             itemView.setOnClickListener(this);
         }
-        void bind(int position){
+/*        void bind(int position){
             rvWishImage.setImageResource(R.mipmap.ic_launcher);
             rvWishTitle.setText(String.valueOf(position));
             rvWishPrice.setText(String.valueOf(position+1));
             rvWishCategory.setText(String.valueOf(position+2));
-        }
+        }*/
 
         @Override
         public void onClick(View v) {
