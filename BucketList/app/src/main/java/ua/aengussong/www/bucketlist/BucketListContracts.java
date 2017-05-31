@@ -1,5 +1,6 @@
 package ua.aengussong.www.bucketlist;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
@@ -7,9 +8,20 @@ import android.provider.BaseColumns;
  */
 
 public class BucketListContracts {
+
+    public static final String AUTHORITY = "ua.aengussong.www.bucketlist";
+
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+
+    public static final String PATH_WISHLIST = "wishlist";
+    public static final String PATH_MILESTONE = "milestone";
+    public static final String PATH_CATEGORY = "category";
+
     private BucketListContracts(){}
 
     public static class WishList implements BaseColumns{
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_WISHLIST).build();
+
         public static final String TABLE_NAME = "wishlist";
 
         public static final String COLUMN_TITLE = "title";
@@ -22,6 +34,8 @@ public class BucketListContracts {
     }
 
     public static class Milestone implements BaseColumns{
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_MILESTONE).build();
+
         public static final String TABLE_NAME = "milestone";
 
         public static final String COLUMN_WISH = "wish";
@@ -30,6 +44,8 @@ public class BucketListContracts {
     }
 
     public static class Category implements BaseColumns{
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORY).build();
+
         public static final String TABLE_NAME = " category ";
 
         public static final String COLUMN_TITLE = "title";

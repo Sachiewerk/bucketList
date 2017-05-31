@@ -14,7 +14,7 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "bucketlist.db";
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
 
     BucketListDBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -49,7 +49,7 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
                 Milestone.COLUMN_TITLE + " TEXT NOT NULL," +
                 Milestone.COLUMN_ACHIEVED + " INTEGER NOT NULL, " +
                 Milestone.COLUMN_WISH + " INTEGER NOT NULL, " +
-                "FOREIGN KEY (" + Milestone.COLUMN_WISH + ") REFERENCES " + WishList.TABLE_NAME + " (" + WishList._ID + ")" +
+                "FOREIGN KEY (" + Milestone.COLUMN_WISH + ") REFERENCES " + WishList.TABLE_NAME + " (" + WishList._ID + ") ON DELETE CASCADE" +
                 ");";
         db.execSQL(CREATE_MILESTONE_TABLE);
     }
@@ -61,5 +61,15 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
         db.execSQL("DROP TABLE IF EXISTS " + Milestone.TABLE_NAME);
 
         onCreate(db);
+    }
+    //to provide cascade deleting
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+
+        if (!db.isReadOnly()) {
+            // Enable foreign key constraints
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }
     }
 }

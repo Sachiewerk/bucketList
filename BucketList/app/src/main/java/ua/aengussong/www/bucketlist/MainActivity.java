@@ -5,27 +5,40 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements RVMainAdapter.WishClickListener {
+public class MainActivity extends AppCompatActivity implements RVMainAdapter.WishClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    private int number = 20;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int WISH_LOADER_ID = 0;
+
 
     private RVMainAdapter adapter;
 
     RecyclerView recyclerView;
 
-    private SQLiteDatabase db;
-
     private FloatingActionButton fab;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,88 +59,112 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.hasFixedSize();
 
-        BucketListDBHelper dbHelper = new BucketListDBHelper(this);
-        db = dbHelper.getWritableDatabase();
-        insertFakeData(db);
-        Cursor cursor = getAllWishes();
 
-        adapter = new RVMainAdapter(cursor, this);
+        adapter = new RVMainAdapter(this, this);
         recyclerView.setAdapter(adapter);
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            // Called when a user swipes left or right on a ViewHolder
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                // Here is where you'll implement swipe to delete
+
+                // COMPLETED (1) Construct the URI for the item to delete
+                //[Hint] Use getTag (from the adapter code) to get the id of the swiped item
+                // Retrieve the id of the task to delete
+                int id = (int) viewHolder.itemView.getTag();
+
+                // Build appropriate uri with String row id appended
+                String stringId = Integer.toString(id);
+                Uri uri = BucketListContracts.WishList.CONTENT_URI;
+                uri = uri.buildUpon().appendPath(stringId).build();
+
+                // COMPLETED (2) Delete a single row of data using a ContentResolver
+                getContentResolver().delete(uri, null, null);
+
+                // COMPLETED (3) Restart the loader to re-query for all tasks after a deletion
+                getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
+
+            }
+        }).attachToRecyclerView(recyclerView);
+
+        getSupportLoaderManager().initLoader(WISH_LOADER_ID, null, this);
     }
 
+
     @Override
-    public void onWishClicked(int clickedPosition) {
+    public void onWishClicked(View view) {
         Intent intent = new Intent(MainActivity.this, ViewWishActivity.class);
-        intent.putExtra(Intent.EXTRA_TEXT, String.valueOf(clickedPosition));
+        int id = (int) view.getTag();
+        intent.putExtra(Intent.EXTRA_TEXT, String.valueOf(id));
         startActivity(intent);
     }
 
-    private Cursor getAllWishes(){
-        return db.query(BucketListContracts.WishList.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-    }
 
-    public static void insertFakeData(SQLiteDatabase db){
-        if(db == null){
-            return;
-        }
-        //create a list of fake guests
-        List<ContentValues> list = new ArrayList<ContentValues>();
 
-        ContentValues cv = new ContentValues();
-        cv.put(BucketListContracts.WishList.COLUMN_TITLE, "Skydive");
-        cv.put(BucketListContracts.WishList.COLUMN_PRICE, 2000);
-        cv.put(BucketListContracts.WishList.COLUMN_DESCRIPTION,"sdfasdfasdfasdf");
-        list.add(cv);
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new AsyncTaskLoader<Cursor>(this) {
 
-        cv = new ContentValues();
-        cv.put(BucketListContracts.WishList.COLUMN_TITLE, "Skydive");
-        cv.put(BucketListContracts.WishList.COLUMN_PRICE, 4000);
-        cv.put(BucketListContracts.WishList.COLUMN_DESCRIPTION,"qqqqqqqqqqqq");
-        list.add(cv);
+            // Initialize a Cursor, this will hold all the task data
+            Cursor mWishData = null;
 
-        cv = new ContentValues();
-        cv.put(BucketListContracts.WishList.COLUMN_TITLE, "Skydive");
-        cv.put(BucketListContracts.WishList.COLUMN_PRICE, 6000);
-        cv.put(BucketListContracts.WishList.COLUMN_DESCRIPTION,"wwwwwwwwwwwww");
-        list.add(cv);
-
-        cv = new ContentValues();
-        cv.put(BucketListContracts.WishList.COLUMN_TITLE, "Skydive");
-        cv.put(BucketListContracts.WishList.COLUMN_PRICE, 8000);
-        cv.put(BucketListContracts.WishList.COLUMN_DESCRIPTION,"eeeeeeeeeeeee");
-        list.add(cv);
-
-        cv = new ContentValues();
-        cv.put(BucketListContracts.WishList.COLUMN_TITLE, "Skydive");
-        cv.put(BucketListContracts.WishList.COLUMN_PRICE, 10000);
-        cv.put(BucketListContracts.WishList.COLUMN_DESCRIPTION,"rrrrrrrrrrrrr");
-        list.add(cv);
-
-        //insert all guests in one transaction
-        try
-        {
-            db.beginTransaction();
-            //clear the table first
-            db.delete (BucketListContracts.WishList.TABLE_NAME,null,null);
-            //go through the list and add one by one
-            for(ContentValues c:list){
-                db.insert(BucketListContracts.WishList.TABLE_NAME, null, c);
+            // onStartLoading() is called when a loader first starts loading data
+            @Override
+            protected void onStartLoading() {
+                if (mWishData != null) {
+                    // Delivers any previously loaded data immediately
+                    deliverResult(mWishData);
+                } else {
+                    // Force a new load
+                    forceLoad();
+                }
             }
-            db.setTransactionSuccessful();
-        }
-        catch (SQLException e) {
-            //too bad :(
-        }
-        finally
-        {
-            db.endTransaction();
-        }
 
+            // loadInBackground() performs asynchronous loading of data
+            @Override
+            public Cursor loadInBackground() {
+                // Will implement to load data
+
+                // Query and load all task data in the background; sort by priority
+                // [Hint] use a try/catch block to catch any errors in loading data
+
+                try {
+                    return getContentResolver().query(BucketListContracts.WishList.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            null);
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to asynchronously load data.");
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            // deliverResult sends the result of the load, a Cursor, to the registered listener
+            public void deliverResult(Cursor data) {
+                mWishData = data;
+                super.deliverResult(data);
+            }
+        };
     }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adapter.swapCursor(null);
+    }
+
+
 }
