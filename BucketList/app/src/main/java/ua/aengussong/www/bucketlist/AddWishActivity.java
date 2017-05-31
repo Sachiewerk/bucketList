@@ -16,7 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import ua.aengussong.www.bucketlist.BucketListContracts.WishList;
@@ -30,6 +32,8 @@ public class AddWishActivity extends AppCompatActivity {
     private EditText add_target_date_edit;
 
     private ConstraintLayout add_wish_constraint_layout;
+
+    private ImageView imaginarium;
 
     private static int RESULT_LOAD_IMG  = 1;
     private String imgDecodableString;
@@ -47,6 +51,11 @@ public class AddWishActivity extends AppCompatActivity {
         add_target_date_edit = (EditText) findViewById(R.id.add_target_date_edit);
 
         add_wish_constraint_layout = (ConstraintLayout) findViewById(R.id.add_wish_constraint_layout);
+
+       imaginarium = (ImageView) findViewById(R.id.image_view_add_wish);
+     /*   imaginarium.getSettings().setBuiltInZoomControls(true);
+        imaginarium.getSettings().setSupportZoom(true);
+        imaginarium.getSettings().setLoadWithOverviewMode(true);*/
 
         Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(mActionBarToolbar);
@@ -96,7 +105,7 @@ public class AddWishActivity extends AppCompatActivity {
 
                 Bitmap blurredImage = BlurBuilder.blur(this, galleryImage);
 
-                setImageOnBackground(blurredImage);
+                setImageOnBackground(blurredImage, selectedImage);
             } else{
                 Toast.makeText(this,"You Haven't Picked Image", Toast.LENGTH_SHORT).show();
             }
@@ -105,9 +114,11 @@ public class AddWishActivity extends AppCompatActivity {
         }*/
     }
 
-    private void setImageOnBackground(Bitmap bitmap){
+    private void setImageOnBackground(Bitmap bitmap, Uri er){
         Drawable drawableImage = new BitmapDrawable(getResources(),bitmap);
-        add_wish_constraint_layout.setBackground(drawableImage);
+        //add_wish_constraint_layout.setBackground(drawableImage);
+        imaginarium.setImageBitmap(bitmap);
+//        imaginarium.loadUrl(er.toString());
     }
 
     public void onClickAddWish(View view){
