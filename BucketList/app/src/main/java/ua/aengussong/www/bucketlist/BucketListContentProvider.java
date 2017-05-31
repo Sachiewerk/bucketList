@@ -24,7 +24,7 @@ public class BucketListContentProvider extends ContentProvider {
 
     public static final int MILESTONES = 200;
     public static final int MILESTONES_WITH_ID = 201;
-    public static final int MILESTONES_WITH_WISH = 202;
+
 
     public static final int CATEGORIES = 300;
     public static final int CATEGORIES_WITH_ID = 301;

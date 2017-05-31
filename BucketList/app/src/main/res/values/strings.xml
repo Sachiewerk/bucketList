@@ -2,4 +2,11 @@
     <string name="app_name">BucketList</string>
     <string name="milestones">Milestones:</string>
     <string name="achieved">Achieved</string>
+    <string name="close_activity">Close Activity</string>
+    <string name="add_wish">Add Your Wish</string>
+    <string name="hint_title">Title</string>
+    <string name="hint_category">Category</string>
+    <string name="hint_description">Description</string>
+    <string name="hint_price">Price</string>
+    <string name="hint_target_date">Target Date</string>
 </resources>
