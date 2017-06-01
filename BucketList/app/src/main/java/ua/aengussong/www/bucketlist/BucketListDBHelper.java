@@ -14,7 +14,15 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "bucketlist.db";
 
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
+
+    private final String[] categoryInitValues = {
+            "Travel",
+            "Health",
+            "Work",
+            "Learning",
+            "Love"
+    };
 
     BucketListDBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -52,6 +60,11 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
                 "FOREIGN KEY (" + Milestone.COLUMN_WISH + ") REFERENCES " + WishList.TABLE_NAME + " (" + WishList._ID + ") ON DELETE CASCADE" +
                 ");";
         db.execSQL(CREATE_MILESTONE_TABLE);
+
+        for(String value : categoryInitValues){
+            db.execSQL("INSERT INTO " + BucketListContracts.Category.TABLE_NAME +
+                    "( " + BucketListContracts.Category.COLUMN_TITLE + " ) values ('"+value+"');");
+        }
     }
 
     @Override
