@@ -100,7 +100,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="8dp"
+        android:inputType="number"/>
     <EditText
         android:hint="@string/hint_target_date"
         tools:text="target date_edit"
@@ -113,8 +114,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginEnd="8dp" />
-
+        android:layout_marginEnd="8dp"
+        android:inputType="datetime"/>
     <Button
         android:id="@+id/add_milestones_button"
         android:layout_width="wrap_content"

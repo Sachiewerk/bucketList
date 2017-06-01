@@ -117,8 +117,11 @@ public class AddWishActivity extends AppCompatActivity {
 
     public void onClickAddWish(View view){
         String addTitle, addPrice, addCategory, addDescription, addTargetDate;
-        if((addTitle = add_title_edit.getText().toString()).equals(""))
+        if((addTitle = add_title_edit.getText().toString()).equals("")) {
+            Toast.makeText(this, "Add Title", Toast.LENGTH_SHORT).show();
             return;
+        }
+
         addPrice = add_price_edit.getText().toString();
         addCategory = add_category_edit.getText().toString();
         addDescription = add_description_edit.getText().toString();
