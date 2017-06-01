@@ -9,4 +9,6 @@
     <string name="hint_description">Description</string>
     <string name="hint_price">Price</string>
     <string name="hint_target_date">Target Date</string>
+    <string name="add">Add</string>
+    <string name="add_milestones">Add Milestones</string>
 </resources>

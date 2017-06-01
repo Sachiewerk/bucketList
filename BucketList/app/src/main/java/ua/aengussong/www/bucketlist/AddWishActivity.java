@@ -62,6 +62,8 @@ public class AddWishActivity extends AppCompatActivity {
 
         assert getSupportActionBar() != null;
         getSupportActionBar().setTitle(R.string.add_wish);
+        //to prevent start focus on edits cause its annoying
+//        add_wish_constraint_layout.requestFocus();
     }
 
     @Override
@@ -82,7 +84,6 @@ public class AddWishActivity extends AppCompatActivity {
 
 
     public void loadImageFromGallery(View view){
-
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
     }
@@ -91,7 +92,7 @@ public class AddWishActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-//        try{
+        try{
             if(requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK && data != null){
                 Uri selectedImage = data.getData();
                 String[] filePathCoumn = {MediaStore.Images.Media.DATA};
@@ -105,20 +106,13 @@ public class AddWishActivity extends AppCompatActivity {
 
                 Bitmap blurredImage = BlurBuilder.blur(this, galleryImage);
 
-                setImageOnBackground(blurredImage, selectedImage);
+                imaginarium.setImageBitmap(blurredImage);
             } else{
                 Toast.makeText(this,"You Haven't Picked Image", Toast.LENGTH_SHORT).show();
             }
-    /*    } catch(Exception e){
+        } catch(Exception e){
                 Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
-        }*/
-    }
-
-    private void setImageOnBackground(Bitmap bitmap, Uri er){
-        Drawable drawableImage = new BitmapDrawable(getResources(),bitmap);
-        //add_wish_constraint_layout.setBackground(drawableImage);
-        imaginarium.setImageBitmap(bitmap);
-//        imaginarium.loadUrl(er.toString());
+        }
     }
 
     public void onClickAddWish(View view){
