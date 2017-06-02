@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.database;
 
 import android.net.Uri;
 import android.provider.BaseColumns;

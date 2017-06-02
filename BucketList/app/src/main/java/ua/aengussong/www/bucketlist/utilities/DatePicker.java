@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.utilities;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import ua.aengussong.www.bucketlist.R;
 
 /**
  * Created by coolsmileman on 01.06.2017.

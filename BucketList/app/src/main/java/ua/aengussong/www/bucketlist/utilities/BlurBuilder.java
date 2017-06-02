@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.utilities;
 
 import android.content.Context;
 import android.graphics.Bitmap;

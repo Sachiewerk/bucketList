@@ -2,8 +2,6 @@ package ua.aengussong.www.bucketlist;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.sql.Blob;
-import java.sql.Timestamp;
+import ua.aengussong.www.bucketlist.database.BucketListContracts;
 
 /**
  * Created by coolsmileman on 24.05.2017.
@@ -68,8 +65,6 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
         Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length, options);
         holder.rvWishImage.setImageBitmap(bitmap);
 */
-
-/*        holder.bind(position);*/
     }
 
     @Override

@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.database;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -189,7 +189,7 @@ public class BucketListContentProvider extends ContentProvider {
                 if(categories_id > 0){
                     returnUri = ContentUris.withAppendedId(BucketListContracts.Category.CONTENT_URI, categories_id);
                 } else {
-                    throw new android.database.SQLException("Failed to insert rpw into " + uri);
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
                 break;
             default: throw new UnsupportedOperationException("Unknown Uri: " + uri);

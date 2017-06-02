@@ -28,7 +28,7 @@
         
         <provider
             android:authorities="ua.aengussong.www.bucketlist"
-            android:name="ua.aengussong.www.bucketlist.BucketListContentProvider"
+            android:name="ua.aengussong.www.bucketlist.database.BucketListContentProvider"
             android:exported="false"/>
     </application>
 

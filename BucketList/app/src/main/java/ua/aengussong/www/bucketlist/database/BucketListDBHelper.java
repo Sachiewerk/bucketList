@@ -1,10 +1,11 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import ua.aengussong.www.bucketlist.BucketListContracts.*;
+import ua.aengussong.www.bucketlist.database.BucketListContracts;
+import ua.aengussong.www.bucketlist.database.BucketListContracts.*;
 
 /**
  * Created by coolsmileman on 24.05.2017.
@@ -14,7 +15,7 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "bucketlist.db";
 
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 13;
 
     private final String[] categoryInitValues = {
             "Travel",
