@@ -17,7 +17,7 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "bucketlist.db";
 
-    public static final int DATABASE_VERSION = 19;
+    public static final int DATABASE_VERSION = 20;
 
     private Context context;
 
