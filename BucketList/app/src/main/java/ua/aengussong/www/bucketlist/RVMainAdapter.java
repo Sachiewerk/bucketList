@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
+import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 
 /**
  * Created by coolsmileman on 24.05.2017.
@@ -39,32 +40,27 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
     @Override
     public void onBindViewHolder(WishViewHolder holder, int position) {
         int idIndex = cursor.getColumnIndex(BucketListContracts.WishList._ID);
+        int imageIndex = cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_IMAGE);
         int titleIndex = cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_TITLE);
+        int categoryIndex = cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_CATEGORY);
         int priceIndex = cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_PRICE);
 
         cursor.moveToPosition(position);
 
         int id = cursor.getInt(idIndex);
         String title = cursor.getString(titleIndex);
-       // byte[] image = cursor.getBlob(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_IMAGE));
+        byte[] image = cursor.getBlob(imageIndex);
         int price = cursor.getInt(priceIndex);
-       // int category = cursor.getInt(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_CATEGORY));
-        /*String description = cursor.getString(cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_DESCRIPTION));
-        Timestamp targetDate = Timestamp.valueOf(cursor.getString(
-                cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_TARGET_DATE)));
-        Timestamp achievedDate = Timestamp.valueOf(cursor.getString(
-                cursor.getColumnIndex(BucketListContracts.WishList.COLUMN_ACHIEVED_DATE)));*/
+        int category = cursor.getInt(categoryIndex);
 
         holder.itemView.setTag(id);
         holder.rvWishTitle.setText(title);
+        if(image != null)
+            holder.rvWishImage.setImageBitmap(DbBitmapUtility.getImage(image));
 
-       // holder.rvWishCategory.setText(String.valueOf(category));
+        holder.rvWishCategory.setText(String.valueOf(category));
         holder.rvWishPrice.setText(String.valueOf(price));
 
-      /*  BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length, options);
-        holder.rvWishImage.setImageBitmap(bitmap);
-*/
     }
 
     @Override

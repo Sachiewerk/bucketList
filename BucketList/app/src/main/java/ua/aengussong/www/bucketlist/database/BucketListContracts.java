@@ -29,8 +29,8 @@ public class BucketListContracts {
         public static final String COLUMN_PRICE = "price";
         public static final String COLUMN_CATEGORY = "category";
         public static final String COLUMN_DESCRIPTION = "description";
-        public static final String COLUMN_TARGET_DATE = "target date";
-        public static final String COLUMN_ACHIEVED_DATE = "achieved date";
+        public static final String COLUMN_TARGET_DATE = "target_date";
+        public static final String COLUMN_ACHIEVED_DATE = "achieved_date";
     }
 
     public static class Milestone implements BaseColumns{

@@ -23,7 +23,8 @@
         android:id="@+id/toolbar_actionbar"
         android:title="@string/add_wish"
         android:layout_width="match_parent"
-        android:layout_height="?android:actionBarSize" />
+        android:layout_height="?android:actionBarSize"
+ />
 
     <ImageButton
         android:id="@+id/add_add_image_photo"
@@ -124,19 +125,30 @@
         android:inputType="datetime"
         android:onClick="showDatePickerDialog"
         android:focusable="false"/>
-    <Button
-        android:id="@+id/add_milestones_button"
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/add_milestones_edit"
+        android:hint="@string/add_milestones"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/add_milestones"
-        android:background="@drawable/round_button"
-        android:textSize="12sp"
-        android:layout_marginTop="8dp"
+        android:layout_margin="8dp"
         app:layout_constraintTop_toBottomOf="@+id/add_target_date_edit"
-        android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp" />
+        app:layout_constraintRight_toRightOf="parent"
+        android:imeOptions="actionDone"
+        android:inputType="textShortMessage"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/add_milestones_edit"
+        android:id="@+id/llrv"
+        >
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/rv_add_milestones"
 
+        />
+    </LinearLayout>
     <Button
         android:id="@+id/add_wish_button"
         android:background="@drawable/round_button"
@@ -144,7 +156,7 @@
         android:textSize="22sp"
         android:layout_height="wrap_content"
         android:text="@string/add"
-        app:layout_constraintTop_toBottomOf="@+id/add_milestones_button"
+        app:layout_constraintTop_toBottomOf="@+id/llrv"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginRight="8dp"

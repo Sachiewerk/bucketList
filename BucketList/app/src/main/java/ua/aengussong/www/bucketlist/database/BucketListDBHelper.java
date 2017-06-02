@@ -1,9 +1,11 @@
 package ua.aengussong.www.bucketlist.database;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import ua.aengussong.www.bucketlist.R;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.*;
 
@@ -15,19 +17,13 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "bucketlist.db";
 
-    public static final int DATABASE_VERSION = 13;
+    public static final int DATABASE_VERSION = 19;
 
-    private final String[] categoryInitValues = {
-            "Travel",
-            "Health",
-            "Work",
-            "Learning",
-            "Love"
-    };
+    private Context context;
 
     BucketListDBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-
+        this.context = context;
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -46,8 +42,8 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
                 WishList.COLUMN_PRICE + " INTEGER," +
                 WishList.COLUMN_CATEGORY + " INTEGER," +
                 WishList.COLUMN_DESCRIPTION + " TEXT, " +
-                WishList.COLUMN_TARGET_DATE + " TIMESTAMP," +
-                WishList.COLUMN_ACHIEVED_DATE + " TIMESTAMP," +
+                WishList.COLUMN_TARGET_DATE + " TEXT," +
+                WishList.COLUMN_ACHIEVED_DATE + " TEXT," +
                 "FOREIGN KEY (" + WishList.COLUMN_CATEGORY + ") REFERENCES " + Category.TABLE_NAME + " (" + Category._ID+")"+
                 ");";
         db.execSQL(CREATE_WISHLIST_TABLE);
@@ -62,6 +58,8 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
                 ");";
         db.execSQL(CREATE_MILESTONE_TABLE);
 
+        //initialize category table with some start values
+        String[] categoryInitValues = context.getResources().getStringArray(R.array.category_init);
         for(String value : categoryInitValues){
             db.execSQL("INSERT INTO " + BucketListContracts.Category.TABLE_NAME +
                     "( " + BucketListContracts.Category.COLUMN_TITLE + " ) values ('"+value+"');");

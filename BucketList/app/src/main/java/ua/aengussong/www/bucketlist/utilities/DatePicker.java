@@ -9,9 +9,12 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import ua.aengussong.www.bucketlist.R;
 
@@ -34,7 +37,7 @@ public class DatePicker extends DialogFragment
         // create DatePickerDialog and return it
         DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this,
                 year, month, day);
-        //set current date min date that user can choose
+        //set current date as min date from which user can choose dates
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
         Dialog picker = datePickerDialog;
         picker.setTitle(getResources().getString(R.string.choose_target_date));
@@ -42,11 +45,20 @@ public class DatePicker extends DialogFragment
         return picker;
     }
 
+    private String getDateTime(int year, int month, int day) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Calendar c = Calendar.getInstance();
+        c.set(year,month,day,0,0);
+        Date date = c.getTime();
+        return dateFormat.format(date);
+    }
+
     @Override
     public void onDateSet(android.widget.DatePicker datePicker, int year,
                           int month, int day) {
 
         TextView addTargetDate = (TextView) getActivity().findViewById(R.id.add_target_date_edit);
-        addTargetDate.setText(day + "-" + month + "-" + year);
+        addTargetDate.setTag(getDateTime(year,month,day));
+        addTargetDate.setText(year + "-" + (month+1) + "-" + day);
     }
 }
