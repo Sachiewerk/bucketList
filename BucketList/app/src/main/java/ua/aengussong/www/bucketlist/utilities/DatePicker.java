@@ -46,9 +46,9 @@ public class DatePicker extends DialogFragment
     }
 
     private String getDateTime(int year, int month, int day) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         Calendar c = Calendar.getInstance();
-        c.set(year,month,day,0,0);
+        c.set(year,month,day);
         Date date = c.getTime();
         return dateFormat.format(date);
     }

@@ -254,7 +254,8 @@ public class AddWishActivity extends AppCompatActivity {
             for(int i=0;i<count;i++) {
                 holder = (MilestoneViewHolder) milestonesRecyclerView.findViewHolderForAdapterPosition(i);
                 String title = holder.newMilestone.getText().toString();
-                boolean achieved = holder.newMilestone.isChecked();
+                boolean achievedBool = holder.newMilestone.isChecked();
+                int achieved = achievedBool ? 1 : 0;
 
                 cv = new ContentValues();
                 cv.put(BucketListContracts.Milestone.COLUMN_TITLE,title);

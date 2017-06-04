@@ -3,6 +3,7 @@ package ua.aengussong.www.bucketlist;
 import android.app.usage.NetworkStats;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
+import ua.aengussong.www.bucketlist.utilities.DbQuery;
 
 /**
  * Created by coolsmileman on 24.05.2017.
@@ -54,19 +56,7 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
         int price = cursor.getInt(priceIndex);
         int category = cursor.getInt(categoryIndex);
 
-       Cursor categoryCursor =  context.getContentResolver().query(
-               BucketListContracts.Category.CONTENT_URI,
-               null,
-               BucketListContracts.Category._ID+"=?",
-               new String[]{category+""},
-               null);
-
-        String categoryTitle = "";
-        //prevents crush if query return no results
-        if(categoryCursor.getCount()>0) {
-            categoryCursor.moveToFirst();
-            categoryTitle = categoryCursor.getString(categoryCursor.getColumnIndex(BucketListContracts.Category.COLUMN_TITLE));
-        }
+        String categoryTitle = DbQuery.getCategoryTitle(context, category);
 
         holder.itemView.setTag(id);
         holder.rvWishTitle.setText(title);
