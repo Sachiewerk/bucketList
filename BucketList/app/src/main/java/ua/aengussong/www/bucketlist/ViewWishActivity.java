@@ -4,7 +4,9 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -12,13 +14,17 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.jinatonic.confetti.CommonConfetti;
 
 import org.w3c.dom.Text;
 
@@ -37,6 +43,8 @@ public class ViewWishActivity extends AppCompatActivity {
 
     LinearLayout viewLinearLayout;
 
+    ViewGroup container;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +58,8 @@ public class ViewWishActivity extends AppCompatActivity {
         viewTargetDate = (TextView) findViewById(R.id.view_wish_target_date);
 
         viewLinearLayout = (LinearLayout) findViewById(R.id.view_wish_linearLayout);
+        //provide container for confetti
+        container = (ViewGroup) findViewById(R.id.view_frame_layout);
 
         Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.view_wish_toolbar);
         setSupportActionBar(mActionBarToolbar);
@@ -126,6 +136,10 @@ public class ViewWishActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    public void achievedClicked(View view){
+        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(10_000);
     }
 
     private void updateMilestone(int id, boolean isChecked){
