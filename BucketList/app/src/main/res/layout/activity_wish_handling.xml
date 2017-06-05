@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/colorPrimary">
+    android:background="@color/colorPrimary"
+    android:fillViewport="true">
 <android.support.constraint.ConstraintLayout
     android:id="@+id/add_wish_constraint_layout"
     android:layout_width="match_parent"

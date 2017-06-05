@@ -1,10 +1,13 @@
 package ua.aengussong.www.bucketlist;
 
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -12,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -19,6 +23,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.jinatonic.confetti.CommonConfetti;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.*;
@@ -40,6 +48,8 @@ public class ViewWishActivity extends AppCompatActivity {
 
     ViewGroup container;
 
+    Button achievedButton;
+
     String wishId;
 
     @Override
@@ -53,6 +63,8 @@ public class ViewWishActivity extends AppCompatActivity {
         viewDescription = (TextView) findViewById(R.id.view_wish_description);
         viewPrice = (TextView) findViewById(R.id.view_wish_price);
         viewTargetDate = (TextView) findViewById(R.id.view_wish_target_date);
+
+        achievedButton = (Button) findViewById(R.id.view_wish_achieved_button);
 
         viewLinearLayout = (LinearLayout) findViewById(R.id.view_wish_linearLayout);
         //provide container for confetti
@@ -113,9 +125,43 @@ public class ViewWishActivity extends AppCompatActivity {
 
 
     public void achievedClicked(View view){
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        achievedButton.setVisibility(View.INVISIBLE);
 
-        MediaPlayer.create(this, R.raw.fanfare).start();
-        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(10_000);
+                        ContentValues achievedContentValue = new ContentValues();
+                        achievedContentValue.put(WishList.COLUMN_ACHIEVED_DATE, getDateTime());
+
+                        Uri uri = BucketListContracts.WishList.CONTENT_URI;
+                        uri = uri.buildUpon().appendPath(wishId).build();
+
+                        getContentResolver().update(uri, achievedContentValue, null, null);
+
+                        getContentResolver().delete(Milestone.CONTENT_URI, Milestone.COLUMN_WISH + "=?", new String[]{wishId});
+
+                        MediaPlayer.create(ViewWishActivity.this, R.raw.fanfare).start();
+                        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(10_000);
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
+    }
+
+    private String getDateTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd", Locale.getDefault());
+        Date date = new Date();
+        return dateFormat.format(date);
     }
 
     private void populateEditMilestones(String id){

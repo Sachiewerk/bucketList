@@ -233,6 +233,9 @@ public class BucketListContentProvider extends ContentProvider {
                 // Use selections/selectionArgs to filter for this ID
                 deleted = db.delete(BucketListContracts.Milestone.TABLE_NAME, "_id=?", new String[]{milestoneId});
                 break;
+            case MILESTONES:
+                deleted = db.delete(BucketListContracts.Milestone.TABLE_NAME, selection, selectionArgs);
+                break;
 
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

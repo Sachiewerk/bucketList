@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
+import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 
 public class MainActivity extends AppCompatActivity implements RVMainAdapter.WishClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -77,11 +78,14 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
 
                 // Build appropriate uri with String row id appended
                 String stringId = Integer.toString(id);
-                Uri uri = BucketListContracts.WishList.CONTENT_URI;
+                Uri uri = WishList.CONTENT_URI;
                 uri = uri.buildUpon().appendPath(stringId).build();
 
                 // COMPLETED (2) Delete a single row of data using a ContentResolver
                 getContentResolver().delete(uri, null, null);
+
+                getContentResolver().delete(BucketListContracts.Milestone.CONTENT_URI,
+                        BucketListContracts.Milestone.COLUMN_WISH + "=?", new String[]{id+""});
 
                 // COMPLETED (3) Restart the loader to re-query for all tasks after a deletion
                 getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
@@ -131,11 +135,11 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                 // [Hint] use a try/catch block to catch any errors in loading data
 
                 try {
-                    return getContentResolver().query(BucketListContracts.WishList.CONTENT_URI,
+                    return getContentResolver().query(WishList.CONTENT_URI,
                             null,
-                            null,
-                            null,
-                            null);
+                            WishList.COLUMN_ACHIEVED_DATE + " is null or " +  WishList.COLUMN_ACHIEVED_DATE + "=?",
+                            new String[]{""},
+                            WishList.COLUMN_TARGET_DATE);
 
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to asynchronously load data.");
