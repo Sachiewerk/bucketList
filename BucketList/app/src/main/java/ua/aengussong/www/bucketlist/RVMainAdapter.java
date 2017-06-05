@@ -62,6 +62,8 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
         holder.rvWishTitle.setText(title);
         if(image != null)
             holder.rvWishImage.setImageBitmap(DbBitmapUtility.getImage(image));
+        else
+            holder.rvWishImage.setImageDrawable(null);
 
         holder.rvWishCategory.setText(categoryTitle);
         holder.rvWishPrice.setText(String.valueOf(price));

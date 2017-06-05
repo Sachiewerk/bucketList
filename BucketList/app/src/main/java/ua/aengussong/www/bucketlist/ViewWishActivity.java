@@ -1,17 +1,13 @@
 package ua.aengussong.www.bucketlist;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,17 +16,16 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.jinatonic.confetti.CommonConfetti;
 
-import org.w3c.dom.Text;
-
+import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.*;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 import ua.aengussong.www.bucketlist.utilities.DbQuery;
+
+import static ua.aengussong.www.bucketlist.utilities.DbQuery.updateMilestone;
 
 public class ViewWishActivity extends AppCompatActivity {
 
@@ -44,6 +39,8 @@ public class ViewWishActivity extends AppCompatActivity {
     LinearLayout viewLinearLayout;
 
     ViewGroup container;
+
+    String wishId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +65,25 @@ public class ViewWishActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(R.string.your_wish);
 
         Intent intent = getIntent();
-        String id="";
+
         if(intent.hasExtra(Intent.EXTRA_TEXT)){
-            id = intent.getStringExtra(Intent.EXTRA_TEXT);
+            wishId = intent.getStringExtra(Intent.EXTRA_TEXT);
+        } else {
+            finish();
         }
 
-        viewWish(id);
+        viewWish(wishId);
 
-        viewMilestones(id);
+        populateEditMilestones(wishId);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewImage.setImageDrawable(null);
+        viewWish(wishId);
+        viewLinearLayout.removeAllViewsInLayout();
+        populateEditMilestones(wishId);
     }
 
     private void viewWish(String id){
@@ -94,8 +102,8 @@ public class ViewWishActivity extends AppCompatActivity {
         cursor.close();
 
         String category = DbQuery.getCategoryTitle(this, categoryId);
-
-        viewImage.setImageBitmap(DbBitmapUtility.getImage(imageArray));
+        if(imageArray != null)
+            viewImage.setImageBitmap(DbBitmapUtility.getImage(imageArray));
         viewTitle.setText(title);
         viewCategory.setText(category);
         viewDescription.setText(description);
@@ -103,22 +111,31 @@ public class ViewWishActivity extends AppCompatActivity {
         viewTargetDate.setText(target_date);
     }
 
-    private void viewMilestones(String id){
-        Uri uri = Milestone.CONTENT_URI;
-        Cursor cursor = getContentResolver().query(uri, null, Milestone.COLUMN_WISH + "=?", new String[]{id}, null);
 
-        if(cursor.getCount() == 0)
+    public void achievedClicked(View view){
+
+        MediaPlayer.create(this, R.raw.fanfare).start();
+        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(10_000);
+    }
+
+    private void populateEditMilestones(String id){
+        Uri baseMilestoneUri = BucketListContracts.Milestone.CONTENT_URI;
+        Cursor milestoneCursor = getContentResolver().query(baseMilestoneUri, null,
+                BucketListContracts.Milestone.COLUMN_WISH + "=?", new String[]{id}, null);
+
+        if(milestoneCursor.getCount() == 0)
             return;
 
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast()){
+        milestoneCursor.moveToFirst();
+        while(!milestoneCursor.isAfterLast()){
             CheckBox chk = new CheckBox(this);
 
-            chk.setTag(cursor.getInt(cursor.getColumnIndex(Milestone._ID)));
+            chk.setTag(milestoneCursor.getInt(milestoneCursor.getColumnIndex(BucketListContracts.Milestone._ID)));
 
-            String title = cursor.getString(cursor.getColumnIndex(Milestone.COLUMN_TITLE));
+            String title = milestoneCursor.getString(milestoneCursor.getColumnIndex(BucketListContracts.Milestone.COLUMN_TITLE));
+
             chk.setText(title);
-            int checked = cursor.getInt(cursor.getColumnIndex(Milestone.COLUMN_ACHIEVED));
+            int checked = milestoneCursor.getInt(milestoneCursor.getColumnIndex(BucketListContracts.Milestone.COLUMN_ACHIEVED));
             boolean isChecked = checked == 1;
             chk.setChecked(isChecked);
 
@@ -126,51 +143,35 @@ public class ViewWishActivity extends AppCompatActivity {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     int milestoneId = (int) buttonView.getTag();
-                    updateMilestone(milestoneId, isChecked);
+                    updateMilestone(ViewWishActivity.this, milestoneId, isChecked);
                 }
             });
 
             viewLinearLayout.addView(chk);
 
-            cursor.moveToNext();
+            milestoneCursor.moveToNext();
         }
-
-
-    }
-
-    public void achievedClicked(View view){
-        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(10_000);
-    }
-
-    private void updateMilestone(int id, boolean isChecked){
-        Uri uri = Milestone.CONTENT_URI;
-        uri = uri.buildUpon().appendPath(id+"").build();
-
-        ContentValues cv = new ContentValues();
-
-        int checkedInt = isChecked ? 1 : 0;
-        cv.put(Milestone.COLUMN_ACHIEVED, checkedInt);
-
-        int updated =  getContentResolver().update(uri, cv, null, null);
-
-        if (updated != 0 )
-            Toast.makeText(this, updated+"", Toast.LENGTH_SHORT).show();
-
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity, menu);
+        getMenuInflater().inflate(R.menu.edit_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
-            case R.id.action_close_activity:
+            case R.id.close_wish_menu_item:
                 finish();
                 break;
+
+            case R.id.edit_wish_menu_item:
+                Intent intent = new Intent(ViewWishActivity.this, WishHandlingActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, wishId);
+
+                startActivity(intent);
         }
         return true;
     }

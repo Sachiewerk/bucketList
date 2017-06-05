@@ -1,8 +1,10 @@
 package ua.aengussong.www.bucketlist.utilities;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.widget.Toast;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 
@@ -25,6 +27,22 @@ public class DbQuery {
         }
         categoryCursor.close();
         return categoryTitle;
+    }
+
+    public static void updateMilestone(Context context, int id, boolean isChecked){
+        Uri uri = BucketListContracts.Milestone.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(id+"").build();
+
+        ContentValues cv = new ContentValues();
+
+        int checkedInt = isChecked ? 1 : 0;
+        cv.put(BucketListContracts.Milestone.COLUMN_ACHIEVED, checkedInt);
+
+        int updated =  context.getContentResolver().update(uri, cv, null, null);
+
+        if (updated != 0 )
+            Toast.makeText(context, updated+"", Toast.LENGTH_SHORT).show();
+
     }
 
 }

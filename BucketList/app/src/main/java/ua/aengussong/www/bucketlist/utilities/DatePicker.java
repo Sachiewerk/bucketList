@@ -58,7 +58,6 @@ public class DatePicker extends DialogFragment
                           int month, int day) {
 
         TextView addTargetDate = (TextView) getActivity().findViewById(R.id.add_target_date_edit);
-        addTargetDate.setTag(getDateTime(year,month,day));
         addTargetDate.setText(year + "-" + (month+1) + "-" + day);
     }
 }

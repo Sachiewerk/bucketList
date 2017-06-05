@@ -15,8 +15,4 @@
         tools:layout_constraintLeft_creator="1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-<!--    <ImageButton
-        android:id="@+id/milestone_delete_imagebutton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />-->
 </LinearLayout>

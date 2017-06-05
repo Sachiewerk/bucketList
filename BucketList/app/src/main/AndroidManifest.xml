@@ -22,7 +22,7 @@
         <activity android:name=".ViewWishActivity"
             android:screenOrientation="portrait"
             android:configChanges="keyboardHidden|orientation|screenSize"/>
-        <activity android:name=".AddWishActivity"
+        <activity android:name=".WishHandlingActivity"
             android:screenOrientation="portrait"
             android:configChanges="keyboardHidden|orientation|screenSize"/>
         

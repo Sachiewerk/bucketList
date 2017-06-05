@@ -1,7 +1,5 @@
 package ua.aengussong.www.bucketlist;
 
-import android.content.Context;
-import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -22,8 +20,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,8 +40,12 @@ import ua.aengussong.www.bucketlist.utilities.BlurBuilder;
 import ua.aengussong.www.bucketlist.utilities.DatePicker;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 import ua.aengussong.www.bucketlist.RVAddMilestoneAdapter.*;
+import ua.aengussong.www.bucketlist.utilities.DbQuery;
 
-public class AddWishActivity extends AppCompatActivity {
+import static ua.aengussong.www.bucketlist.utilities.DbQuery.updateMilestone;
+
+
+public class WishHandlingActivity extends AppCompatActivity {
 
     private EditText add_title_edit;
     private EditText add_price_edit;
@@ -51,6 +59,11 @@ public class AddWishActivity extends AppCompatActivity {
 
     private RecyclerView milestonesRecyclerView;
 
+    private Button addButton;
+    private Button updateButton;
+
+    private ImageButton deleteImage;
+
     private static int RESULT_LOAD_IMG  = 1;
     private String imgDecodableString;
     private Bitmap galleryImage = null;
@@ -59,12 +72,20 @@ public class AddWishActivity extends AppCompatActivity {
 
     private ArrayList<String> milestonesArrayList = new ArrayList<>();
 
-    private long id;
+    private long milestoneWishId;
+
+    private String editedWishId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_wish);
+        setContentView(R.layout.activity_wish_handling);
+
+        Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        setSupportActionBar(mActionBarToolbar);
+
+        assert getSupportActionBar() != null;
+        getSupportActionBar().setTitle(R.string.add_wish);
 
         add_title_edit = (EditText) findViewById(R.id.add_title_edit);
         add_price_edit = (EditText) findViewById(R.id.add_price_edit);
@@ -72,14 +93,120 @@ public class AddWishActivity extends AppCompatActivity {
         add_target_date_edit = (EditText) findViewById(R.id.add_target_date_edit);
         add_milestone_edit = (EditText) findViewById(R.id.add_milestones_edit);
 
+        backgroundWishImage = (ImageView) findViewById(R.id.image_view_add_wish);
+
+        deleteImage = (ImageButton) findViewById(R.id.delete_image_button);
+
+        categorySpinner = (Spinner) findViewById(R.id.category_spinner);
+
+        milestonesRecyclerView = (RecyclerView) findViewById(R.id.rv_add_milestones);
+
+        addButton = (Button) findViewById(R.id.add_wish_button);
+        updateButton = (Button) findViewById(R.id.update_wish_button);
+
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        milestonesRecyclerView.setLayoutManager(llm);
+        milestonesRecyclerView.hasFixedSize();
+        adapter = new RVAddMilestoneAdapter(this, milestonesArrayList);
+
+
+
+        milestonesRecyclerView.setAdapter(adapter);
+
+
+        populateCategorySpinner();
+
+        Intent intent = getIntent();
+
+        if(intent.hasExtra(Intent.EXTRA_TEXT)){
+            editedWishId = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if(editedWishId != null)
+                goEditMode(editedWishId);
+        } else {
+            add_milestone_edit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId,
+                                              KeyEvent event) {
+                    if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
+                            || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                        milestonesArrayList.add(add_milestone_edit.getText().toString());
+                        adapter.notifyDataSetChanged();
+                        add_milestone_edit.setText("");
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT){
+
+                @Override
+                public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                    int id = (int) viewHolder.itemView.getTag();
+                    milestonesArrayList.remove(id);
+
+                    adapter.notifyDataSetChanged();
+                }
+            }).attachToRecyclerView(milestonesRecyclerView);
+        }
+    }
+
+    public String getMilestoneId(String title, String wishId) {
+        Cursor cursor = getContentResolver().query(BucketListContracts.Milestone.CONTENT_URI, null, "title=? and wish=?", new String[]{title, wishId}, null);
+        String id;
+        if(cursor.getCount() > 0){
+            cursor.moveToFirst();
+            id = cursor.getInt(cursor.getColumnIndex(BucketListContracts.Milestone._ID)) + "";
+            return id;
+        }
+        return null;
+    }
+
+    private void populateMilestone(){
+        Uri baseMilestoneUri = BucketListContracts.Milestone.CONTENT_URI;
+        Cursor milestoneCursor = getContentResolver().query(baseMilestoneUri, null,
+                BucketListContracts.Milestone.COLUMN_WISH + "=?", new String[]{editedWishId}, null);
+
+        if(milestoneCursor.getCount() == 0)
+            return;
+
+        milestoneCursor.moveToFirst();
+        while(!milestoneCursor.isAfterLast()){
+
+            String title = milestoneCursor.getString(milestoneCursor.getColumnIndex(BucketListContracts.Milestone.COLUMN_TITLE));
+            milestonesArrayList.add(title);
+
+            milestoneCursor.moveToNext();
+        }
+
+    }
+
+    private void goEditMode(String wishId){
+        Toast.makeText(this, wishId+"", Toast.LENGTH_LONG).show();
+
+        addButton.setVisibility(View.INVISIBLE);
+        updateButton.setVisibility(View.VISIBLE);
+
+        populateMilestone();
+        adapter.notifyDataSetChanged();
 
         add_milestone_edit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-
             @Override
             public boolean onEditorAction(TextView v, int actionId,
                                           KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
                         || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    ContentValues cv = new ContentValues();
+                    cv.put(BucketListContracts.Milestone.COLUMN_TITLE, add_milestone_edit.getText().toString());
+                    cv.put(BucketListContracts.Milestone.COLUMN_WISH, editedWishId);
+                    cv.put(BucketListContracts.Milestone.COLUMN_ACHIEVED, 0);
+
+                    getContentResolver().insert(BucketListContracts.Milestone.CONTENT_URI,cv);
                     milestonesArrayList.add(add_milestone_edit.getText().toString());
                     adapter.notifyDataSetChanged();
                     add_milestone_edit.setText("");
@@ -89,25 +216,6 @@ public class AddWishActivity extends AppCompatActivity {
             }
         });
 
-        backgroundWishImage = (ImageView) findViewById(R.id.image_view_add_wish);
-
-        categorySpinner = (Spinner) findViewById(R.id.category_spinner);
-
-        milestonesRecyclerView = (RecyclerView) findViewById(R.id.rv_add_milestones);
-
-        Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        setSupportActionBar(mActionBarToolbar);
-
-        assert getSupportActionBar() != null;
-        getSupportActionBar().setTitle(R.string.add_wish);
-
-
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        milestonesRecyclerView.setLayoutManager(llm);
-        milestonesRecyclerView.hasFixedSize();
-        adapter = new RVAddMilestoneAdapter(this,milestonesArrayList);
-
-        milestonesRecyclerView.setAdapter(adapter);
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT){
 
             @Override
@@ -118,13 +226,64 @@ public class AddWishActivity extends AppCompatActivity {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int id = (int) viewHolder.itemView.getTag();
+                String milestoneId = getMilestoneId(milestonesArrayList.get(id), editedWishId);
+
+                if(milestoneId != null){
+                    Uri uri = BucketListContracts.Milestone.CONTENT_URI;
+                    uri = uri.buildUpon().appendPath(milestoneId).build();
+
+                    getContentResolver().delete(uri, null, null);
+                }
+
                 milestonesArrayList.remove(id);
 
                 adapter.notifyDataSetChanged();
             }
         }).attachToRecyclerView(milestonesRecyclerView);
 
-        populateCategorySpinner();
+
+
+        Uri uri = WishList.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(wishId).build();
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if(cursor.getCount() == 0){ Toast.makeText(this, "fucker", Toast.LENGTH_LONG).show();
+            finish();}
+        cursor.moveToFirst();
+        String title = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TITLE));
+        String description = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_DESCRIPTION));
+        String target_date = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TARGET_DATE));
+        int price = cursor.getInt(cursor.getColumnIndex(WishList.COLUMN_PRICE));
+        int categoryId = cursor.getInt(cursor.getColumnIndex(WishList.COLUMN_CATEGORY));
+        byte[] imageArray = cursor.getBlob(cursor.getColumnIndex(WishList.COLUMN_IMAGE));
+        cursor.close();
+
+        String category = DbQuery.getCategoryTitle(this, categoryId);
+
+        add_title_edit.setText(title);
+        add_description_edit.setText(description);
+        add_target_date_edit.setText(target_date);
+        add_price_edit.setText(price+"");
+
+        categorySpinner.setSelection(getSpinnerItemIndex(categorySpinner, category));
+
+        if(imageArray != null) {
+            Bitmap blurredImage = BlurBuilder.blur(this, DbBitmapUtility.getImage(imageArray));
+            backgroundWishImage.setImageBitmap(blurredImage);
+
+            deleteImage.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private int getSpinnerItemIndex(Spinner spinner, String itemTitle) {
+        int index = 0;
+
+        for (int i=0;i<spinner.getCount();i++){
+            if (spinner.getItemAtPosition(i).toString().equalsIgnoreCase(itemTitle)){
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
 
     @Override
@@ -143,7 +302,6 @@ public class AddWishActivity extends AppCompatActivity {
         return true;
     }
 
-
     public void loadImageFromGallery(View view){
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
@@ -155,6 +313,8 @@ public class AddWishActivity extends AppCompatActivity {
 
         try{
             if(requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK && data != null){
+                deleteImage.setVisibility(View.VISIBLE);
+
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
@@ -176,11 +336,17 @@ public class AddWishActivity extends AppCompatActivity {
         }
     }
 
+    public void deleteSelectedImage(View view){
+        backgroundWishImage.setImageDrawable(null);
+        galleryImage = null;
+
+        deleteImage.setVisibility(View.INVISIBLE);
+    }
+
     public void showDatePickerDialog(View view){
         DialogFragment dateDialog = new DatePicker();
         dateDialog.show(getSupportFragmentManager(), "datePicker");
     }
-
 
     public void populateCategorySpinner(){
         String[] adapterCols=new String[]{BucketListContracts.Category.COLUMN_TITLE};
@@ -191,12 +357,40 @@ public class AddWishActivity extends AppCompatActivity {
         categorySpinner.setAdapter(sca);
     }
 
+    public void onClickUpdateWish(View view){
+        Uri uri = BucketListContracts.WishList.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(editedWishId).build();
+        ContentValues cv;
+        if((cv = setContentValues()) == null)
+            return;
+        int updateWish = getContentResolver().update(uri, cv , null, null);
+
+        Toast.makeText(this, updateWish+"", Toast.LENGTH_SHORT);
+
+        finish();
+    }
+
     public void onClickAddWish(View view){
-        Toast.makeText(this,(String)add_target_date_edit.getTag(),Toast.LENGTH_SHORT).show();
+        ContentValues cv;
+        if ((cv = setContentValues()) == null)
+            return;
+        Uri uri = getContentResolver().insert(WishList.CONTENT_URI, cv);
+
+        if(uri != null){
+            Toast.makeText(this,uri.toString(),Toast.LENGTH_SHORT).show();
+            milestoneWishId = Long.parseLong(uri.getLastPathSegment());
+
+            insertMilestones();
+        }
+
+        finish();
+    }
+
+    private ContentValues setContentValues(){
         String addTitle, addPrice, addCategory, addDescription, addTargetDate;
         if((addTitle = add_title_edit.getText().toString()).equals("")) {
             Toast.makeText(this, "Add Title", Toast.LENGTH_SHORT).show();
-            return;
+            return null;
         }
 
         addPrice = add_price_edit.getText().toString();
@@ -219,9 +413,9 @@ public class AddWishActivity extends AppCompatActivity {
             contentValues.put(WishList.COLUMN_DESCRIPTION, addDescription);
         //on DatePicker.class in onDataSet method String date value was put in add_target_date_edit tag
         if(!addTargetDate.equals(""))
-            contentValues.put(WishList.COLUMN_TARGET_DATE, (String)add_target_date_edit.getTag());
+            contentValues.put(WishList.COLUMN_TARGET_DATE, addTargetDate);
 
-        byte[] bytes;
+        byte[] bytes = null;
         if(galleryImage != null){
             //with large images CursorIndexOutOfBoundException was thrown, decided to scale images
             //to solve problem
@@ -229,19 +423,10 @@ public class AddWishActivity extends AppCompatActivity {
             Bitmap scaled = Bitmap.createScaledBitmap(galleryImage, 512, nh, true);
 
             bytes = DbBitmapUtility.getBytes(scaled);
-            contentValues.put(WishList.COLUMN_IMAGE, bytes);
         }
+        contentValues.put(WishList.COLUMN_IMAGE, bytes);
 
-        Uri uri = getContentResolver().insert(WishList.CONTENT_URI, contentValues);
-
-        if(uri != null){
-            Toast.makeText(this,uri.toString(),Toast.LENGTH_SHORT).show();
-            id = Long.parseLong(uri.getLastPathSegment());
-
-            insertMilestones();
-        }
-
-        finish();
+        return  contentValues;
     }
 
     private void insertMilestones() {
@@ -260,7 +445,7 @@ public class AddWishActivity extends AppCompatActivity {
                 cv = new ContentValues();
                 cv.put(BucketListContracts.Milestone.COLUMN_TITLE,title);
                 cv.put(BucketListContracts.Milestone.COLUMN_ACHIEVED,achieved);
-                cv.put(BucketListContracts.Milestone.COLUMN_WISH, id);
+                cv.put(BucketListContracts.Milestone.COLUMN_WISH, milestoneWishId);
                 Uri uri = getContentResolver().insert(BucketListContracts.Milestone.CONTENT_URI, cv);
 
                 if(uri != null) {

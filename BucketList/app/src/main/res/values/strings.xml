@@ -13,4 +13,7 @@
     <string name="add_milestones">Add Milestones</string>
     <string name="choose_target_date">Choose Target Date</string>
     <string name="your_wish">Your Wish, Master</string>
+    <string name="edit_wish_menu_item">Edit Wish</string>
+    <string name="update">Update</string>
 </resources>
+

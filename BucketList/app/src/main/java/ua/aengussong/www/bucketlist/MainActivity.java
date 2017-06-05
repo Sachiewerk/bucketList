@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, AddWishActivity.class);
+                Intent intent = new Intent(MainActivity.this, WishHandlingActivity.class);
                 startActivity(intent);
             }
         });
