@@ -108,6 +108,7 @@ public class ViewWishActivity extends AppCompatActivity {
         String title = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TITLE));
         String description = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_DESCRIPTION));
         String target_date = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TARGET_DATE));
+        String achieved_date = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_ACHIEVED_DATE));
         int price = cursor.getInt(cursor.getColumnIndex(WishList.COLUMN_PRICE));
         int categoryId = cursor.getInt(cursor.getColumnIndex(WishList.COLUMN_CATEGORY));
         byte[] imageArray = cursor.getBlob(cursor.getColumnIndex(WishList.COLUMN_IMAGE));
@@ -121,6 +122,9 @@ public class ViewWishActivity extends AppCompatActivity {
         viewDescription.setText(description);
         viewPrice.setText(price+"");
         viewTargetDate.setText(target_date);
+
+        if(achieved_date != null)
+            achievedButton.setVisibility(View.INVISIBLE);
     }
 
 

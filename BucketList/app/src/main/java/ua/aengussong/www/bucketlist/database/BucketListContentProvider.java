@@ -261,6 +261,9 @@ public class BucketListContentProvider extends ContentProvider {
         int match = sUriMatcher.match(uri);
 
         switch (match) {
+            case WISHES:
+                updated = dbHelper.getWritableDatabase().update(BucketListContracts.WishList.TABLE_NAME, values, selection, selectionArgs);
+                break;
             case WISHES_WITH_ID:
                 //update a single task by getting the id
                 String wishId = uri.getPathSegments().get(1);

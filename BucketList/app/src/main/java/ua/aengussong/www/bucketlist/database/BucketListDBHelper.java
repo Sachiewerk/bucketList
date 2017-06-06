@@ -17,7 +17,7 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "bucketlist.db";
 
-    public static final int DATABASE_VERSION = 20;
+    public static final int DATABASE_VERSION = 22;
 
     private Context context;
 
@@ -44,7 +44,8 @@ public class BucketListDBHelper extends SQLiteOpenHelper{
                 WishList.COLUMN_DESCRIPTION + " TEXT, " +
                 WishList.COLUMN_TARGET_DATE + " TEXT," +
                 WishList.COLUMN_ACHIEVED_DATE + " TEXT," +
-                "FOREIGN KEY (" + WishList.COLUMN_CATEGORY + ") REFERENCES " + Category.TABLE_NAME + " (" + Category._ID+")"+
+                "FOREIGN KEY (" + WishList.COLUMN_CATEGORY + ") REFERENCES " +
+                    Category.TABLE_NAME + " (" + Category._ID+") ON DELETE SET NULL"+
                 ");";
         db.execSQL(CREATE_WISHLIST_TABLE);
 

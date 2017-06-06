@@ -187,7 +187,6 @@ public class WishHandlingActivity extends AppCompatActivity {
     }
 
     private void goEditMode(String wishId){
-        Toast.makeText(this, wishId+"", Toast.LENGTH_LONG).show();
 
         addButton.setVisibility(View.INVISIBLE);
         updateButton.setVisibility(View.VISIBLE);
@@ -252,6 +251,7 @@ public class WishHandlingActivity extends AppCompatActivity {
         String title = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TITLE));
         String description = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_DESCRIPTION));
         String target_date = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TARGET_DATE));
+        String achieved_date = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_ACHIEVED_DATE));
         int price = cursor.getInt(cursor.getColumnIndex(WishList.COLUMN_PRICE));
         int categoryId = cursor.getInt(cursor.getColumnIndex(WishList.COLUMN_CATEGORY));
         byte[] imageArray = cursor.getBlob(cursor.getColumnIndex(WishList.COLUMN_IMAGE));
@@ -271,6 +271,11 @@ public class WishHandlingActivity extends AppCompatActivity {
             backgroundWishImage.setImageBitmap(blurredImage);
 
             deleteImage.setVisibility(View.VISIBLE);
+        }
+
+        if(achieved_date != null){
+            add_milestone_edit.setVisibility(View.INVISIBLE);
+            add_target_date_edit.setVisibility(View.INVISIBLE);
         }
     }
 
