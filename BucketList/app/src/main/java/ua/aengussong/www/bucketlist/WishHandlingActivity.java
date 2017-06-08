@@ -1,5 +1,6 @@
 package ua.aengussong.www.bucketlist;
 
+import android.graphics.PorterDuff;
 import android.support.v4.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -64,6 +65,8 @@ public class WishHandlingActivity extends AppCompatActivity {
 
     private ImageButton deleteImage;
 
+    private TextView toolbarTitle;
+
     private static int RESULT_LOAD_IMG  = 1;
     private String imgDecodableString;
     private Bitmap galleryImage = null;
@@ -85,7 +88,9 @@ public class WishHandlingActivity extends AppCompatActivity {
         setSupportActionBar(mActionBarToolbar);
 
         assert getSupportActionBar() != null;
-        getSupportActionBar().setTitle(R.string.add_wish);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        toolbarTitle = (TextView) findViewById(R.id.wish_handling_toolbar_title);
 
         add_title_edit = (EditText) findViewById(R.id.add_title_edit);
         add_price_edit = (EditText) findViewById(R.id.add_price_edit);
@@ -94,6 +99,7 @@ public class WishHandlingActivity extends AppCompatActivity {
         add_milestone_edit = (EditText) findViewById(R.id.add_milestones_edit);
 
         backgroundWishImage = (ImageView) findViewById(R.id.image_view_add_wish);
+        backgroundWishImage.setColorFilter(R.color.colorPrimaryDark, PorterDuff.Mode.DARKEN);
 
         deleteImage = (ImageButton) findViewById(R.id.delete_image_button);
 
@@ -188,6 +194,8 @@ public class WishHandlingActivity extends AppCompatActivity {
 
     private void goEditMode(String wishId){
 
+        toolbarTitle.setText(getString(R.string.edit_wish));
+
         addButton.setVisibility(View.INVISIBLE);
         updateButton.setVisibility(View.VISIBLE);
 
@@ -267,8 +275,10 @@ public class WishHandlingActivity extends AppCompatActivity {
         categorySpinner.setSelection(getSpinnerItemIndex(categorySpinner, category));
 
         if(imageArray != null) {
-            Bitmap blurredImage = BlurBuilder.blur(this, DbBitmapUtility.getImage(imageArray));
+            galleryImage = DbBitmapUtility.getImage(imageArray);
+            Bitmap blurredImage = BlurBuilder.blur(this, galleryImage);
             backgroundWishImage.setImageBitmap(blurredImage);
+
 
             deleteImage.setVisibility(View.VISIBLE);
         }
@@ -289,22 +299,6 @@ public class WishHandlingActivity extends AppCompatActivity {
             }
         }
         return index;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.action_close_activity:
-                finish();
-                break;
-        }
-        return true;
     }
 
     public void loadImageFromGallery(View view){
@@ -458,6 +452,10 @@ public class WishHandlingActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void onCloseMenuButton(View view){
+        finish();
     }
 
 }

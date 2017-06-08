@@ -1,7 +1,10 @@
 package ua.aengussong.www.bucketlist;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,8 +46,12 @@ public class RVAddMilestoneAdapter extends RecyclerView.Adapter<RVAddMilestoneAd
     public void onBindViewHolder(MilestoneViewHolder holder, int position) {
         int id = position;
 
-        holder.itemView.setTag(id);
+holder.itemView.setTag(id);
         holder.newMilestone.setText(milestonesArrayList.get(position).toString());
+        holder.newMilestone.setTextColor(Color.WHITE);
+        int states[][] = {{android.R.attr.state_checked}, {}};
+        int colors[] = {Color.WHITE, Color.WHITE};
+        CompoundButtonCompat.setButtonTintList(holder.newMilestone, new ColorStateList(states, colors));
     }
 
     @Override

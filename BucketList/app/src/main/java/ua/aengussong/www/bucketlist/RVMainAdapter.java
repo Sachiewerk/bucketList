@@ -4,12 +4,14 @@ import android.app.usage.NetworkStats;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
@@ -59,14 +61,31 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
         String categoryTitle = DbQuery.getCategoryTitle(context, category);
 
         holder.itemView.setTag(id);
-        holder.rvWishTitle.setText(title);
-        if(image != null)
-            holder.rvWishImage.setImageBitmap(DbBitmapUtility.getImage(image));
-        else
-            holder.rvWishImage.setImageDrawable(null);
+            holder.rvWishTitle.setText(context.getString(R.string.hint_title)+" "+title);
 
-        holder.rvWishCategory.setText(categoryTitle);
-        holder.rvWishPrice.setText(String.valueOf(price));
+        if(image != null){
+
+            holder.rvWishImage.requestLayout();
+            holder.rvWishImage.getLayoutParams().height = 400;
+
+            holder.rvWishImage.setImageBitmap(DbBitmapUtility.getImage(image));
+        }
+        else{
+            holder.rvWishImage.requestLayout();
+            holder.rvWishImage.getLayoutParams().height = 1;
+            holder.rvWishImage.getLayoutParams().width = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            holder.rvWishImage.setImageDrawable(null);
+        }
+        if(categoryTitle.equals("")){
+            holder.rvWishCategory.setText("CategoryTest");
+            holder.rvWishCategory.setVisibility(View.INVISIBLE);
+        }
+        else{
+            holder.rvWishCategory.setText(context.getString(R.string.hint_category)+" "+categoryTitle);
+            holder.rvWishCategory.setVisibility(View.VISIBLE);
+        }
+
+        holder.rvWishPrice.setText(context.getString(R.string.hint_price)+" "+String.valueOf(price));
 
     }
 

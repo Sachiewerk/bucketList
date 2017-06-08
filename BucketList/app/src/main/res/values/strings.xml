@@ -4,16 +4,22 @@
     <string name="achieved">Achieved</string>
     <string name="close_activity">Close Activity</string>
     <string name="add_wish">Add Your Wish</string>
-    <string name="hint_title">Title</string>
-    <string name="category">Category:</string>
-    <string name="hint_description">Description</string>
-    <string name="hint_price">Price</string>
-    <string name="hint_target_date">Target Date</string>
+    <string name="hint_title">Title:</string>
+    <string name="hint_category">Category:</string>
+    <string name="hint_description">Description:</string>
+    <string name="hint_price">Price:</string>
+    <string name="hint_target_date">Target Date:</string>
     <string name="add">Add</string>
     <string name="add_milestones">Add Milestones</string>
     <string name="choose_target_date">Choose Target Date</string>
     <string name="your_wish">Your Wish, Master</string>
     <string name="edit_wish_menu_item">Edit Wish</string>
     <string name="update">Update</string>
+    <string name="category">Category</string>
+    <string name="are_you_sure">Are You Sure?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="edit_wish">Edit Your Wish</string>
+    <string name="backup">Backup</string>
 </resources>
 

@@ -7,10 +7,15 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +38,7 @@ import ua.aengussong.www.bucketlist.database.BucketListContracts.*;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 import ua.aengussong.www.bucketlist.utilities.DbQuery;
 
+import static android.view.View.INVISIBLE;
 import static ua.aengussong.www.bucketlist.utilities.DbQuery.updateMilestone;
 
 public class ViewWishActivity extends AppCompatActivity {
@@ -74,7 +80,7 @@ public class ViewWishActivity extends AppCompatActivity {
         setSupportActionBar(mActionBarToolbar);
 
         assert getSupportActionBar() != null;
-        getSupportActionBar().setTitle(R.string.your_wish);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         Intent intent = getIntent();
 
@@ -115,16 +121,56 @@ public class ViewWishActivity extends AppCompatActivity {
         cursor.close();
 
         String category = DbQuery.getCategoryTitle(this, categoryId);
-        if(imageArray != null)
+
+        if(imageArray != null) {
+            viewImage.requestLayout();
+            viewImage.getLayoutParams().height = 400;
+
             viewImage.setImageBitmap(DbBitmapUtility.getImage(imageArray));
-        viewTitle.setText(title);
-        viewCategory.setText(category);
-        viewDescription.setText(description);
-        viewPrice.setText(price+"");
-        viewTargetDate.setText(target_date);
+        } else{
+            viewImage.requestLayout();
+            viewImage.getLayoutParams().height=1;
+            viewImage.getLayoutParams().width = LinearLayout.LayoutParams.MATCH_PARENT;
+            viewImage.setImageDrawable(null);
+        }
+        String firstPart = getString(R.string.hint_title);
+        SpannableStringBuilder ssbTitle = new SpannableStringBuilder(firstPart + " " +title);
+        ssbTitle.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                0, firstPart.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        viewTitle.setText(ssbTitle);
+
+        firstPart = getString(R.string.hint_category);
+        SpannableStringBuilder ssbCategory = new SpannableStringBuilder(firstPart + " " + category);
+        ssbCategory.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                0, firstPart.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        viewCategory.setText(ssbCategory);
+        if(category.equals(""))
+            viewCategory.setVisibility(INVISIBLE);
+
+        firstPart = getString(R.string.hint_description);
+        SpannableStringBuilder ssbDescription = new SpannableStringBuilder(firstPart + " " + description);
+        ssbDescription.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                0, firstPart.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        viewDescription.setText(ssbDescription);
+        if(description == null || description.equals(""))
+            viewDescription.setVisibility(INVISIBLE);
+
+        firstPart = getString(R.string.hint_price);
+        SpannableStringBuilder ssbPrice = new SpannableStringBuilder(firstPart + " " + price);
+        ssbPrice.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                0, firstPart.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        viewPrice.setText(ssbPrice);
+
+        firstPart = getString(R.string.hint_target_date);
+        SpannableStringBuilder ssbTargetDate = new SpannableStringBuilder(firstPart + " " + target_date);
+        ssbTargetDate.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                0, firstPart.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        viewTargetDate.setText(ssbTargetDate);
+        if(target_date == null || target_date.equals(""))
+            viewTargetDate.setVisibility(INVISIBLE);
 
         if(achieved_date != null)
-            achievedButton.setVisibility(View.INVISIBLE);
+            achievedButton.setVisibility(INVISIBLE);
     }
 
 
@@ -134,7 +180,7 @@ public class ViewWishActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        achievedButton.setVisibility(View.INVISIBLE);
+                        achievedButton.setVisibility(INVISIBLE);
 
                         ContentValues achievedContentValue = new ContentValues();
                         achievedContentValue.put(WishList.COLUMN_ACHIEVED_DATE, getDateTime());
@@ -146,8 +192,8 @@ public class ViewWishActivity extends AppCompatActivity {
 
                         getContentResolver().delete(Milestone.CONTENT_URI, Milestone.COLUMN_WISH + "=?", new String[]{wishId});
 
-                        MediaPlayer.create(ViewWishActivity.this, R.raw.fanfare).start();
-                        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(10_000);
+                        MediaPlayer.create(ViewWishActivity.this, R.raw.achieved).start();
+                        CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(5_000);
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:
@@ -157,8 +203,11 @@ public class ViewWishActivity extends AppCompatActivity {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View sureView = factory.inflate(R.layout.are_you_sure_image_layout, null);
+        builder.setView(sureView);
+        builder.setPositiveButton(getString(R.string.yes), dialogClickListener)
+                .setNegativeButton(getString(R.string.no), dialogClickListener).show();
     }
 
     private String getDateTime() {
@@ -185,6 +234,7 @@ public class ViewWishActivity extends AppCompatActivity {
             String title = milestoneCursor.getString(milestoneCursor.getColumnIndex(BucketListContracts.Milestone.COLUMN_TITLE));
 
             chk.setText(title);
+            chk.setTextSize(18);
             int checked = milestoneCursor.getInt(milestoneCursor.getColumnIndex(BucketListContracts.Milestone.COLUMN_ACHIEVED));
             boolean isChecked = checked == 1;
             chk.setChecked(isChecked);
@@ -203,26 +253,14 @@ public class ViewWishActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.edit_menu, menu);
-        return true;
+    public void onCloseWishMenuButton(View view){
+        finish();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.close_wish_menu_item:
-                finish();
-                break;
+    public void onEditWishMenuButton(View view){
+        Intent intent = new Intent(ViewWishActivity.this, WishHandlingActivity.class);
+        intent.putExtra(Intent.EXTRA_TEXT, wishId);
 
-            case R.id.edit_wish_menu_item:
-                Intent intent = new Intent(ViewWishActivity.this, WishHandlingActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, wishId);
-
-                startActivity(intent);
-        }
-        return true;
+        startActivity(intent);
     }
 }

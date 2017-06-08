@@ -6,11 +6,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,10 +24,12 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.mikepenz.materialdrawer.Drawer;
@@ -47,13 +54,15 @@ public class CategoryActivity extends AppCompatActivity implements LoaderManager
 
     private FloatingActionButton fab;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.category);
+        builder.setTitle(R.string.hint_category);
 
 // Set up the input
         final EditText input = new EditText(this);
@@ -86,6 +95,7 @@ public class CategoryActivity extends AppCompatActivity implements LoaderManager
         });
 
         fab = (FloatingActionButton) findViewById(R.id.fab_add_category);
+        fab.setImageResource(R.drawable.ic_fab_add_wish);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -102,7 +112,7 @@ public class CategoryActivity extends AppCompatActivity implements LoaderManager
         setSupportActionBar(categoryToolbar);
 
         assert getSupportActionBar() != null;
-        getSupportActionBar().setTitle(R.string.category);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         adapter = new RVCategoryAdapter(this);
         recyclerView.setAdapter(adapter);
@@ -145,6 +155,53 @@ public class CategoryActivity extends AppCompatActivity implements LoaderManager
         }).attachToRecyclerView(recyclerView);
 
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
+    }
+
+    public void wishSwiped(final RecyclerView.ViewHolder viewHolder){
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        // Here is where you'll implement swipe to delete
+
+                        // COMPLETED (1) Construct the URI for the item to delete
+                        //[Hint] Use getTag (from the adapter code) to get the id of the swiped item
+                        // Retrieve the id of the task to delete
+                        int id = (int) viewHolder.itemView.getTag();
+
+                        // Build appropriate uri with String row id appended
+                        String stringId = Integer.toString(id);
+                        Uri uri = BucketListContracts.Category.CONTENT_URI;
+                        uri = uri.buildUpon().appendPath(stringId).build();
+
+                        // COMPLETED (2) Delete a single row of data using a ContentResolver
+                /*ContentValues cv = new ContentValues();
+                cv.put(BucketListContracts.WishList.COLUMN_CATEGORY, "");
+
+                getContentResolver().update(BucketListContracts.WishList.CONTENT_URI, cv,
+                        BucketListContracts.WishList.COLUMN_CATEGORY + "=?", new String[]{stringId});*/
+
+                        getContentResolver().delete(uri, null, null);
+
+
+                        // COMPLETED (3) Restart the loader to re-query for all tasks after a deletion
+                        getSupportLoaderManager().restartLoader(CATEGORY_LOADER_ID, null, CategoryActivity.this);
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        getSupportLoaderManager().restartLoader(CATEGORY_LOADER_ID, null, CategoryActivity.this);
+                        break;
+                }
+            }
+        };
+
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View view = factory.inflate(R.layout.are_you_sure_image_layout, null);
+        builder.setView(view);
+        builder.setPositiveButton(getString(R.string.yes), dialogClickListener)
+                .setNegativeButton(getString(R.string.no), dialogClickListener).show();
     }
 
     @Override
@@ -213,19 +270,7 @@ public class CategoryActivity extends AppCompatActivity implements LoaderManager
         adapter.swapCursor(null);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.action_close_activity:
-                finish();
-                break;
-        }
-        return true;
+    public void onCloseMenuButton(View view){
+        finish();
     }
 }

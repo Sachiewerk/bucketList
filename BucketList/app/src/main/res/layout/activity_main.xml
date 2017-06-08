@@ -13,17 +13,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="@color/md_grey_400">
-
- <!--   <ImageView
-        android:id = "@+id/background_image"
-        android:layout_gravity="top"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/main_toolbar_background"
-        android:adjustViewBounds="true"/>-->
     <android.support.v7.widget.Toolbar
         android:layout_gravity="top"
         android:id="@+id/main_toolbar"
@@ -36,7 +25,7 @@
             android:layout_height="wrap_content"
             android:text="@string/app_name"
             android:layout_gravity="top|end"
-            android:id="@+id/toolbar_title"
+            android:id="@+id/main_toolbar_title"
             android:textColor="@android:color/white"
             android:textSize="35sp"
             android:layout_marginEnd="20dp"/>
@@ -47,7 +36,9 @@
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/rv_wishes"/>
+        android:id="@+id/rv_wishes"
+        android:paddingBottom="200dp"
+        android:clipToPadding="false"/>
 
 
     </FrameLayout>

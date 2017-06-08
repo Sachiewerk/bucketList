@@ -2,12 +2,20 @@ package ua.aengussong.www.bucketlist;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.Random;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
@@ -47,6 +55,14 @@ public class RVCategoryAdapter extends RecyclerView.Adapter<RVCategoryAdapter.Ca
 
         holder.itemView.setTag(id);
         holder.rvCategoryTitle.setText(title);
+
+
+        GradientDrawable backgroundGradient = (GradientDrawable)holder.circle.getBackground();
+
+        Random rnd = new Random();
+        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+
+        backgroundGradient.setColor(color);
     }
 
     @Override
@@ -60,11 +76,13 @@ public class RVCategoryAdapter extends RecyclerView.Adapter<RVCategoryAdapter.Ca
 
     public class CategoryViewHolder extends RecyclerView.ViewHolder{
         TextView rvCategoryTitle;
+        ImageView circle;
 
         public CategoryViewHolder(View itemView) {
             super(itemView);
 
             rvCategoryTitle = (TextView) itemView.findViewById(R.id.rv_category_title);
+            circle = (ImageView) itemView.findViewById(R.id.rv_category_circle);
         }
     }
 
