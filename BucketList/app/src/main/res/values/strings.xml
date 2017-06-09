@@ -21,5 +21,9 @@
     <string name="no">No</string>
     <string name="edit_wish">Edit Your Wish</string>
     <string name="backup">Backup</string>
+    <string name="successss">Success</string>
+    <string name="err">Error</string>
+    <string name="savesome">Saved</string>
+    <string name="backups">Backuped</string>
 </resources>
 
