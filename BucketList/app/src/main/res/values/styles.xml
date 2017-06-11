@@ -9,6 +9,8 @@
         <!--to provide custom toolbar-->
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
+        <!--preference theme-->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
     <style name="MyToolbar" parent="@style/ThemeOverlay.AppCompat">

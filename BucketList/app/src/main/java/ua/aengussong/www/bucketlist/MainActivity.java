@@ -1,49 +1,50 @@
 package ua.aengussong.www.bucketlist;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.ContentValues;
-import android.content.Context;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.MediaPlayer;
+import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.webkit.MimeTypeMap;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
@@ -52,11 +53,9 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
-import com.google.gson.Gson;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -67,48 +66,27 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-import ua.aengussong.www.bucketlist.backupDrive.Driver_utils;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 import ua.aengussong.www.bucketlist.database.BucketListDBHelper;
-import ua.aengussong.www.bucketlist.utilities.Utils;
 
-import static ua.aengussong.www.bucketlist.backupDrive.Driver_utils.api;
-import static ua.aengussong.www.bucketlist.backupDrive.Driver_utils.contentsOpenedCallback;
-import static ua.aengussong.www.bucketlist.backupDrive.Driver_utils.fileCallback;
-import static ua.aengussong.www.bucketlist.backupDrive.Driver_utils.mfile;
-import static ua.aengussong.www.bucketlist.backupDrive.Driver_utils.preferences_driverId;
+public class MainActivity extends AppCompatActivity
+        implements RVMainAdapter.WishClickListener, LoaderManager.LoaderCallbacks<Cursor>,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        SharedPreferences.OnSharedPreferenceChangeListener{
 
-public class MainActivity extends AppCompatActivity implements RVMainAdapter.WishClickListener, LoaderManager.LoaderCallbacks<Cursor>, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-//    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int WISH_LOADER_ID = 0;
-    private static final int RESOLVE_CONNECTION_REQUEST_CODE = 10;
-    private static final int REQ_CODE_OPEN = 20;
-    private static final int DIALOG_ERROR_CODE = 30;
-
-//    ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback;
-
-    /**
-     * This is Result result handler of Drive contents.
-     * this callback method call CreateFileOnGoogleDrive() method.
-     */
-
-
 
     private RVMainAdapter adapter;
 
@@ -117,8 +95,12 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
     private FloatingActionButton fab;
 
     String selection;
+    String[] selectionArgs = new String[]{""};
+    String sortOrder = WishList.COLUMN_TARGET_DATE;
 
     Drawer drawer;
+
+    Toolbar mainToolbar;
 
     TextView toolbarTitle;
 
@@ -130,59 +112,36 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
     SecondaryDrawerItem categoryDrawerItem;
     PrimaryDrawerItem bucketListDrawerItem;
     SecondaryDrawerItem backupDrawerItem;
+    SecondaryDrawerItem restoreDrawerItem;
+    SecondaryDrawerItem settingsDrawerItem;
+    SecondaryDrawerItem cashDrawerItem;
+    SecondaryDrawerItem inspirationalDrawerItem;
 
+    AccountHeader headerDrawer;
 
     GoogleApiClient mGoogleApiClient;
 
-    private int REQUEST_CODE_PICKER = 2;
-    private int REQUEST_CODE_SELECT = 3;
 
     private String FOLDER_NAME = "BL_BACKUP";
-    private String FILE_NAME = "bucketList_backup";
 
-//    private Backup backup;
-//    private GoogleApiClient mGoogleApiClient;
     private String TAG = "bucketlist_backup";
-//    private Button backupButton;
-//    private Button restoreButton;
-    private IntentSender intentPicker;
-//    private Realm realm;
 
-
-    private static final String GOOGLE_DRIVE_FILE_NAME = "Databackup";
-//    boolean fileOperation;
+    GoogleSignInOptions gso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Drive.API).
-                addScope(Drive.SCOPE_FILE). addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
-
-
-  /*      driveContentsCallback =
-                new ResultCallback<DriveApi.DriveContentsResult>() {
-                    @Override
-                    public void onResult(DriveApi.DriveContentsResult result) {
-
-                        if (result.getStatus().isSuccess()) {
-                            if (fileOperation == true){
-
-                                CreateFileOnGoogleDrive(result);
-
-                            }
-                        }
-                    }
-                };*/
-
-        String path = getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString();
-
-        File f = new File(path).getParentFile();
-        File file[] = f.listFiles();
-        for (File fv:file)
-            Toast.makeText(this,fv.getName(), Toast.LENGTH_SHORT).show();
-
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        Toast.makeText(getApplicationContext(), getString(R.string.connect_google_drive), Toast.LENGTH_LONG).show();
 
         fab = (FloatingActionButton) findViewById(R.id.fab_add_wish);
         fab.setImageResource(R.drawable.ic_fab_add_wish);
@@ -199,10 +158,27 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.hasFixedSize();
 
-
-
-        Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         toolbarTitle = (TextView) findViewById(R.id.main_toolbar_title);
+
+        SharedPreferences shre = PreferenceManager.getDefaultSharedPreferences(this);
+
+        shre.registerOnSharedPreferenceChangeListener(this);
+        String previouslyEncodedImage = shre.getString("select_toolbar_image", "");
+
+        //image stylization in order to size
+        if( !previouslyEncodedImage.equalsIgnoreCase("") ){
+            byte[] b = Base64.decode(previouslyEncodedImage, Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+            BitmapDrawable dd = new BitmapDrawable(getResources(), bitmap);
+            if(bitmap.getHeight()>=bitmap.getWidth())
+                dd.setGravity(Gravity.FILL_HORIZONTAL);
+            else
+                dd.setGravity(Gravity.FILL);
+
+            Drawable dff = dd;
+            mainToolbar.setBackground(dff);
+        }
 
         setSupportActionBar(mainToolbar);
         assert getSupportActionBar() != null;
@@ -228,21 +204,38 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
         }).attachToRecyclerView(recyclerView);
 
         selection = WishList.COLUMN_ACHIEVED_DATE + " is null or " +  WishList.COLUMN_ACHIEVED_DATE + "=?";
+        selectionArgs = new String[]{""};
 
         getSupportLoaderManager().initLoader(WISH_LOADER_ID, null, this);
 
-        //new DrawerBuilder().withActivity(this).build();
-
-        AccountHeader headerDrawer = new AccountHeaderBuilder()
+        headerDrawer = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withHeaderBackground(R.drawable.header_drawer_background)
                 .build();
 
+        String previouslyEncodedImageDrawer = shre.getString("select_drawer_image", "");
+
+        if( !previouslyEncodedImageDrawer.equalsIgnoreCase("") ){
+            byte[] bDrawer = Base64.decode(previouslyEncodedImageDrawer, Base64.DEFAULT);
+            Bitmap bitmapDrawer = BitmapFactory.decodeByteArray(bDrawer, 0, bDrawer.length);
+            BitmapDrawable dd = new BitmapDrawable(getResources(), bitmapDrawer);
+            if(bitmapDrawer.getHeight()>=bitmapDrawer.getWidth())
+                dd.setGravity(Gravity.FILL_HORIZONTAL);
+            else
+                dd.setGravity(Gravity.FILL);
+
+            Drawable dff = dd;
+            headerDrawer.setBackground(dff);
+        }
+
         achievedDrawerItem = new PrimaryDrawerItem().withIdentifier(1).withName(R.string.achieved).withIcon(R.drawable.ic_achieved_drawer_item);
         categoryDrawerItem = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.category).withIcon(R.drawable.ic_category_drawer_image);
         bucketListDrawerItem = new PrimaryDrawerItem().withIdentifier(3).withName(R.string.app_name).withIcon(R.drawable.ic_bucket_drawer_item);
-        backupDrawerItem  = new SecondaryDrawerItem().withIdentifier(4).withName(R.string.backup);
-        SecondaryDrawerItem restore = new SecondaryDrawerItem().withIdentifier(5).withName("Restore");
+        backupDrawerItem  = new SecondaryDrawerItem().withIdentifier(4).withName(R.string.backup).withIcon(R.drawable.ic_backup_drawer_item);
+        restoreDrawerItem = new SecondaryDrawerItem().withIdentifier(5).withName(R.string.restore).withIcon(R.drawable.ic_restore_drawer_item);
+        settingsDrawerItem = new SecondaryDrawerItem().withIdentifier(6).withName(R.string.settings).withIcon(R.drawable.ic_settings_drawer_item);
+        cashDrawerItem = new SecondaryDrawerItem().withIdentifier(7).withName(R.string.cash).withIcon(R.drawable.ic_cash_drawer_item);
+        inspirationalDrawerItem = new SecondaryDrawerItem().withIdentifier(8).withName(R.string.inspiration).withIcon(R.drawable.ic_inspire_drawer_item);
 
         //create the drawer and remember the `Drawer` result object
         drawer = new DrawerBuilder()
@@ -255,8 +248,14 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                         new DividerDrawerItem(),
                         categoryDrawerItem,
                         new DividerDrawerItem(),
+                        cashDrawerItem,
+                        new DividerDrawerItem(),
+                        inspirationalDrawerItem,
+                        new DividerDrawerItem(),
                         backupDrawerItem,
-                        restore,
+                        restoreDrawerItem,
+                        new DividerDrawerItem(),
+                        settingsDrawerItem,
                         new DividerDrawerItem()
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -268,6 +267,7 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                                 toolbarTitle.setText(getString(R.string.achieved));
                                 moveDrawer();
                                 selection = WishList.COLUMN_ACHIEVED_DATE + " <> ? ";
+                                selectionArgs = new String[]{""};
                                 getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
                                 fab.setVisibility(View.INVISIBLE);
                                 break;
@@ -280,14 +280,54 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                                 toolbarTitle.setText(getString(R.string.app_name));
                                 moveDrawer();
                                 selection = WishList.COLUMN_ACHIEVED_DATE + " is null or " +  WishList.COLUMN_ACHIEVED_DATE + "=?";
+                                selectionArgs = new String[]{""};
                                 getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
                                 fab.setVisibility(View.VISIBLE);
                                 break;
-                            case 4:
+                            case 4://backup
                                 backup();
                                 break;
-                            case 5:
+                            case 5://restore
                                 restoreBackup();
+                                break;
+                            case 6://settings
+                                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                                startActivity(settingsIntent);
+                                break;
+                            case 7://cash
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                builder.setTitle(getString(R.string.enter_cash));
+
+// Set up the input
+                                final EditText input = new EditText(MainActivity.this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                                input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                                builder.setView(input);
+
+                                final String[] m_Text = {""};
+                                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        m_Text[0] = input.getText().toString();
+                                        if(!m_Text[0].equals("")){
+                                            selection = WishList.COLUMN_PRICE + " <= ?";
+                                            selectionArgs = new String[]{m_Text[0]};
+                                            getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
+                                            drawer.closeDrawer();
+                                        }
+                                    }
+                                });
+                                builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                                builder.show();
+                                break;
+                            case 8://inspiration
+                                showRandomInspiration();
                                 break;
                         }
                         return true;
@@ -300,38 +340,44 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
 
     }
 
-//    private void backup(){
-//        Driver_utils.create_backup(this);
-//        Gson gson = new Gson();
-//        if (Utils.isInternetWorking(this)) {
-//            File directorys = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/Databackup");
-//            if (directorys.exists()) {
-//                String json = preferences_driverId.getString("drive_id", "");
-//                DriveId driveId = gson.fromJson(json, DriveId.class);
-//                //Update file already stored in Drive
-//                Driver_utils.trash(driveId, mGoogleApiClient);
-//                // Create the Drive API instance
-//                Driver_utils.creatBackupDrive(this, mGoogleApiClient);
-//                Toast.makeText(getApplicationContext(), "11111", Toast.LENGTH_LONG).show();
-//            } else {
-//                Toast.makeText(getApplicationContext(), "2222", Toast.LENGTH_LONG).show();
-//            }
-//        } else {
-//            Toast.makeText(getApplicationContext(), "333", Toast.LENGTH_LONG).show();
-//        }
-//    }
-    private void backup(){
-//
+    private void showRandomInspiration(){
+        drawer.closeDrawer();
+        String[] inspire = getResources().getStringArray(R.array.quotes);
+        Random rnd = new Random();
+        String randomQuote = inspire[rnd.nextInt(inspire.length)];
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
+        final TextView out = new TextView(MainActivity.this);
+        out.setText(randomQuote);
+            out.setTextSize(22);
+        out.setPadding(30, 30, 30, 30);
+        out.setTypeface(Typeface.SANS_SERIF, Typeface.ITALIC);
+        builder.setView(out);
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    private void backup(){
         if (mGoogleApiClient != null) {
             upload_to_drive();
         } else {
-            Log.e(TAG, "Could not fucking connect to google drive manager");
+            Toast.makeText(this, getString(R.string.couldnt_connect_to_google_manager), Toast.LENGTH_SHORT).show();
         }
     }
 
     private void upload_to_drive() {
-
         //async check if folder exists... if not, create it. continue after with create_file_in_folder(driveId);
         check_folder_exists();
     }
@@ -363,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                                 .setResultCallback(new ResultCallback<DriveFolder.DriveFolderResult>() {
                                     @Override public void onResult(DriveFolder.DriveFolderResult result) {
                                         if (!result.getStatus().isSuccess()) {
-                                            Log.e(TAG, "U AR A MORON! Error while trying to create the folder");
+                                            Log.e(TAG, "Error while trying to create the folder");
                                         } else {
                                             Log.i(TAG, "Created a folder");
                                             DriveId driveId = result.getDriveFolder().getDriveId();
@@ -384,24 +430,14 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
         Drive.DriveApi.query(mGoogleApiClient, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
             @Override public void onResult(DriveApi.MetadataBufferResult result) {
                 if (!result.getStatus().isSuccess()) {
-                    Log.e(TAG, "Cannot create folder in the root.");
+                    Log.e(TAG, "Something bad happened");
                 } else {
                     for (Metadata m : result.getMetadataBuffer()) {
-                        Log.e(TAG, "Folder exists" + "delete_old_backup 1" + m.getTitle() + " " + FILE_NAME + " " + BucketListDBHelper.DATABASE_NAME);
                         if (m.getTitle().equals(BucketListDBHelper.DATABASE_NAME)) {
-                            Log.e(TAG, "Folder exists" + "delete_old_backup 2" + m.getTitle() + " " + FILE_NAME + " " + BucketListDBHelper.DATABASE_NAME);
 
                             DriveId driveId = m.getDriveId();
                             DriveFile oldFile = driveId.asDriveFile();
-//                            oldFile.delete(mGoogleApiClient).setResultCallback(deleteCallback);
-//                            com.google.android.gms.common.api.Status deleteStatus =
-//                                    oldFile.delete(mGoogleApiClient).await();
-                                    oldFile.delete(mGoogleApiClient);
-//                            Toast.makeText(MainActivity.this, deleteStatus.getStatus().toString(), Toast.LENGTH_SHORT).show();
-                            /*if (!deleteStatus.isSuccess()) {
-                                Toast.makeText(MainActivity.this, "delete not wishlo", Toast.LENGTH_SHORT).show();
-                            }*/
-
+                            oldFile.delete(mGoogleApiClient);
                         }
                     }
                 }
@@ -416,28 +452,14 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
         Drive.DriveApi.newDriveContents(mGoogleApiClient).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
             @Override public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
                 if (!driveContentsResult.getStatus().isSuccess()) {
-                    Log.e(TAG, "U AR A MORON! Error while trying to create new file contents");
+                    Log.e(TAG, "Error while trying to create new file contents");
                     return;
                 }
 
                 OutputStream outputStream = driveContentsResult.getDriveContents().getOutputStream();
 
-                //------ THIS IS AN EXAMPLE FOR PICTURE ------
-                //ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
-                //image.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
-                //try {
-                //  outputStream.write(bitmapStream.toByteArray());
-                //} catch (IOException e1) {
-                //  Log.i(TAG, "Unable to write file contents.");
-                //}
-                //// Create the initial metadata - MIME type and title.
-                //// Note that the user will be able to change the title later.
-                //MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
-                //    .setMimeType("image/jpeg").setTitle("Android Photo.png").build();
-
-                //------ THIS IS AN EXAMPLE FOR FILE --------
-                Toast.makeText(MainActivity.this, "Uploading to drive. If you didn't fucked up something like usual you should see it there", Toast.LENGTH_LONG).show();
-                final File theFile = new File(getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString()); //>>>>>> WHAT FILE ?
+                Toast.makeText(MainActivity.this, getString(R.string.upload), Toast.LENGTH_LONG).show();
+                final File theFile = new File(getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString());
                 try {
                     FileInputStream fileInputStream = new FileInputStream(theFile);
                     byte[] buffer = new byte[1024];
@@ -446,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                         outputStream.write(buffer, 0, bytesRead);
                     }
                 } catch (IOException e1) {
-                    Log.i(TAG, "U AR A MORON! Unable to write file contents.");
+                    Log.i(TAG, "Unable to write file contents.");
                 }
 
                 MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(theFile.getName()).setMimeType("text/plain").setStarred(false).build();
@@ -455,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
                         .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
                             @Override public void onResult(@NonNull DriveFolder.DriveFileResult driveFileResult) {
                                 if (!driveFileResult.getStatus().isSuccess()) {
-                                    Log.e(TAG, "U AR A MORON!  Error while trying to create the file");
+                                    Log.e(TAG, "Error while trying to create the file");
                                     return;
                                 }
                                 Log.v(TAG, "Created a file: " + driveFileResult.getDriveFile().getDriveId());
@@ -466,67 +488,22 @@ public class MainActivity extends AppCompatActivity implements RVMainAdapter.Wis
     }
 
 
-    private void openFolderPicker() {
-        try {
-            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-                if (intentPicker == null)
-                    intentPicker = buildIntent();
-                //Start the picker to choose a folder
-                startIntentSenderForResult(
-                        intentPicker, REQUEST_CODE_PICKER, null, 0, 0, 0);
-            }
-        } catch (IntentSender.SendIntentException e) {
-            Log.e(TAG, "Unable to send intent", e);
-        }
-    }
-
-    private IntentSender buildIntent() {
-        return Drive.DriveApi
-                .newOpenFileActivityBuilder()
-                .setMimeType(new String[]{DriveFolder.MIME_TYPE})
-                .build(mGoogleApiClient);
-    }
-
-
-void get_file_from_db(DriveId driveId){
-    DriveFile df = driveId.asDriveFile();
-    downloadFromDrive(df);
-/*    df.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
-            .setResultCallback(contentsOpenedCallback);
-
-    ResultCallback<DriveApi.DriveContentsResult> contentsOpenedCallback =
-            new ResultCallback<DriveApi.DriveContentsResult>() {
-                @Override
-                public void onResult(DriveApi.DriveContentsResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        // display an error saying file can't be opened
-                        return;
-                    }
-                    // DriveContents object contains pointers
-                    // to the actual byte stream
-                    DriveContents contents = result.getDriveContents();
-                }
-            };*/
+    private void get_file_from_db(DriveId driveId){
+        DriveFile df = driveId.asDriveFile();
+        downloadFromDrive(df);
 }
 
-private void restoreBackup(){
-    Log.e(TAG, "Folder exists restore backup 1");
+    private void restoreBackup(){
     Query query =
             new Query.Builder().addFilter(Filters.and(Filters.eq(SearchableField.TITLE, BucketListDBHelper.DATABASE_NAME), Filters.eq(SearchableField.TRASHED, false)))
                     .build();
-    Log.e(TAG, "Folder exists restore backup 2");
     Drive.DriveApi.query(mGoogleApiClient, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
         @Override public void onResult(DriveApi.MetadataBufferResult result) {
-            Log.e(TAG, "Folder exists restore backup 3");
             if (!result.getStatus().isSuccess()) {
-                Log.e(TAG, "Cannot create folder in the root.");
-                Log.e(TAG, "Folder exists restore backup 4");
+                Log.e(TAG, "Something bad happened");
             } else {
-                Log.e(TAG, "Folder exists restore backup5 ");
                 boolean isFound = false;
-                Log.e(TAG, "Folder exists restore backup6 ");
                 for (Metadata m : result.getMetadataBuffer()) {
-                    Log.e(TAG, "Folder exists restore backup 7"+m.getTitle()+" "+FILE_NAME + " " + BucketListDBHelper.DATABASE_NAME);
                     if (m.getTitle().equals(BucketListDBHelper.DATABASE_NAME)) {
 
                         isFound = true;
@@ -536,72 +513,12 @@ private void restoreBackup(){
                     }
                 }
             if(!isFound){
-                Toast.makeText(MainActivity.this, "NO BACKUPS available", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, getString(R.string.no_backups), Toast.LENGTH_SHORT).show();
             }
             }
         }
     });
 }
-
- /*   private void restoreBackup(){
-//        File dbFile = new File(getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString());
-//        DriveFile file = dbFile;
-
-        //*//*openFilePicker();
-        ResultCallback<DriveApi.DriveIdResult> idCallback = new ResultCallback<DriveApi.DriveIdResult>() {
-//            @Override
-            public void onResult(@NonNull DriveApi.DriveIdResult driveIdResult) {
-                DriveFile file = Drive.DriveApi.getFile(mGoogleApiClient, driveIdResult.getDriveId());
-                PendingResult<DriveApi.DriveContentsResult> pendingResult = file.open(mGoogleApiClient,
-                        DriveFile.MODE_READ_ONLY, null);
-
-                pendingResult.setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
-                    public String fileAsString;
-                    @Override
-                    public void onResult(DriveApi.DriveContentsResult result) {
-                        DriveContents fileContents = result.getDriveContents();
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(fileContents.getInputStream()));
-                        StringBuilder builder = new StringBuilder();
-                        String oneLine;
-                        Log.i(TAG, "reading input stream and building string...");
-                        try {
-                            while ((oneLine = reader.readLine()) != null) {
-                                builder.append(oneLine);
-                            }
-                            fileAsString = builder.toString();
-                        } catch (IOException e) {
-                            Log.e(TAG, "IOException while reading from the stream", e);
-                        }
-                        fileContents.discard(mGoogleApiClient);
-                        Intent intent = new Intent(RetrieveContentsActivity.this,
-                                DisplayFileActivity.class);
-                        intent.putExtra("text", fileAsString);
-                        startActivity(intent);
-                    }
-                });
-            }
-
-            }
-        };
-
-//        downloadFromDrive();
-    }*/
-
-    private void openFilePicker() {
-        //        build an intent that we'll use to start the open file activity
-        IntentSender intentSender = Drive.DriveApi
-                .newOpenFileActivityBuilder()
-//                these mimetypes enable these folders/files types to be selected
-                .setMimeType(new String[]{DriveFolder.MIME_TYPE, "text/plain"})
-                .build(mGoogleApiClient);
-        try {
-            startIntentSenderForResult(
-                    intentSender, REQUEST_CODE_SELECT, null, 0, 0, 0);
-        } catch (IntentSender.SendIntentException e) {
-            Log.e(TAG, "Unable to send intent", e);
-        }
-    }
 
     private void downloadFromDrive(DriveFile file) {
         file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
@@ -609,20 +526,16 @@ private void restoreBackup(){
                     @Override
                     public void onResult(DriveApi.DriveContentsResult result) {
                         if (!result.getStatus().isSuccess()) {
-                            Toast.makeText(MainActivity.this, "1", Toast.LENGTH_SHORT).show();
                             return;
-
                         }
 
                         // DriveContents object contains pointers
                         // to the actual byte stream
                         DriveContents contents = result.getDriveContents();
                         InputStream input = contents.getInputStream();
-                        Toast.makeText(MainActivity.this, "2", Toast.LENGTH_SHORT).show();
                         try {
                             File file = new File(getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString());
                             OutputStream output = new FileOutputStream(file);
-                            Toast.makeText(MainActivity.this, "3", Toast.LENGTH_SHORT).show();
                             try {
                                 try {
                                     byte[] buffer = new byte[4 * 1024]; // or other buffer size
@@ -631,11 +544,9 @@ private void restoreBackup(){
                                     while ((read = input.read(buffer)) != -1) {
                                         output.write(buffer, 0, read);
                                     }
-                                    Toast.makeText(MainActivity.this, "4", Toast.LENGTH_SHORT).show();
                                     output.flush();
                                 } finally {
                                     output.close();
-                                    Toast.makeText(MainActivity.this, "5", Toast.LENGTH_SHORT).show();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -643,270 +554,18 @@ private void restoreBackup(){
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         } finally {
-                            Toast.makeText(MainActivity.this, "6", Toast.LENGTH_SHORT).show();
-                            /*try {
+                            try {
                                 input.close();
                             } catch (IOException e) {
                                 e.printStackTrace();
-                            }*/
+                            }
                         }
 
-                        Toast.makeText(getApplicationContext(),"activity_backup_drive_message_restart", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),getString(R.string.downloading_backup), Toast.LENGTH_LONG).show();
 
-                        // Reboot app
-                        /*Intent mStartActivity = new Intent(getApplicationContext(), MainActivity.class);
-                        int mPendingIntentId = 123456;
-                        PendingIntent mPendingIntent = PendingIntent.getActivity(getApplicationContext(), mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-                        AlarmManager mgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-                        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-                        System.exit(0);*/
                         getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
                     }
                 });
-    }
-
-    private void uploadToDrive(DriveId mFolderDriveId) {
-        if (mFolderDriveId != null) {
-            //Create the file on GDrive
-            final DriveFolder folder = mFolderDriveId.asDriveFolder();
-            Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                    .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
-                        @Override
-                        public void onResult(DriveApi.DriveContentsResult result) {
-                            if (!result.getStatus().isSuccess()) {
-                                Log.e(TAG, "Error while trying to create new file contents");
-                                return;
-                            }
-                            final DriveContents driveContents = result.getDriveContents();
-
-                            // Perform I/O off the UI thread.
-                            new Thread() {
-                                @Override
-                                public void run() {
-                                    // write content to DriveContents
-                                    OutputStream outputStream = driveContents.getOutputStream();
-
-                                    FileInputStream inputStream = null;
-                                    try {
-                                        inputStream = new FileInputStream(new File(getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString()));
-                                    } catch (FileNotFoundException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    byte[] buf = new byte[1024];
-                                    int bytesRead;
-                                    try {
-                                        if (inputStream != null) {
-                                            while ((bytesRead = inputStream.read(buf)) > 0) {
-                                                outputStream.write(buf, 0, bytesRead);
-                                            }
-                                        }
-                                    } catch (IOException e) {
-
-                                        e.printStackTrace();
-                                    }
-
-
-                                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                                            .setTitle("bucketList_backup")
-                                            .setMimeType("text/plain")
-                                            .build();
-
-                                    // create a file in selected folder
-                                    folder.createFile(mGoogleApiClient, changeSet, driveContents)
-                                            .setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
-                                                @Override
-                                                public void onResult(DriveFolder.DriveFileResult result) {
-                                                    if (!result.getStatus().isSuccess()) {
-                                                        Log.d(TAG, "Error while trying to create the file");
-
-                                                        finish();
-                                                        return;
-                                                    }
-
-//                                                    finish();
-                                                }
-                                            });
-                                }
-                            }.start();
-                        }
-                    });
-        }
-    }
-
-  /*  private void restoreBackup(){
-
-        // Launch user interface and allow user to select file
-        IntentSender intentSender = Drive.DriveApi
-                .newOpenFileActivityBuilder()
-                .setMimeType(new String[]{"application/zip"})
-                .build(mGoogleApiClient);
-        try {
-
-            startIntentSenderForResult(
-
-                    intentSender, REQ_CODE_OPEN, null, 0, 0, 0);
-
-        } catch (IntentSender.SendIntentException e) {
-
-            Log.w(TAG, e.getMessage());
-        }
-//        fileOperation = true;
-        // create new contents resource
-*//*        final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback =
-                new ResultCallback<DriveApi.DriveContentsResult>() {
-                    @Override
-                    public void onResult(DriveApi.DriveContentsResult result) {
-
-                        if (result.getStatus().isSuccess()) {
-                            if (fileOperation == true){
-
-                                CreateFileOnGoogleDrive(result);
-
-                            }
-                        }
-                    }
-                };*//*
-
-//*//*        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-//                .setResultCallback(driveContentsCallback);*//*
-
-
-    }*/
-
-/*    public void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
-
-        final DriveContents driveContents = result.getDriveContents();
-
-        // Perform I/O off the UI thread.
-        new Thread() {
-            @Override
-            public void run() {
-                // write content to DriveContents
-                OutputStream outputStream = driveContents.getOutputStream();
-                Writer writer = new OutputStreamWriter(outputStream);
-                try {
-                    writer.write("Hello abhay!");
-                    writer.close();
-
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setTitle("abhaytest2")
-                    .setMimeType("text/plain")
-                    .setStarred(true).build();
-
-                // create a file in root folder
-                Drive.DriveApi.getRootFolder(mGoogleApiClient)
-                        .createFile(mGoogleApiClient, changeSet, driveContents)
-                .setResultCallback(fileCallback);
-            }
-        }.start();
-    }*/
-
-  /*  *//**
-     * Handle result of Created file
-     *//*
-    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
-    ResultCallback<DriveFolder.DriveFileResult>() {
-        @Override
-        public void onResult(DriveFolder.DriveFileResult result) {
-            if (result.getStatus().isSuccess()) {
-
-                Toast.makeText(getApplicationContext(), "file created: "+" "+
-                        result.getDriveFile().getDriveId(), Toast.LENGTH_LONG).show();
-
-            }
-
-            return;
-
-        }
-    };*/
-
-   /* final private ResultCallback<DriveApi.DriveContentsResult> contentsCallback = new ResultCallback<DriveApi.DriveContentsResult>() {
-
-        @Override
-        public void onResult(DriveApi.DriveContentsResult result) {
-            if (!result.getStatus().isSuccess()) {
-                Log.v(TAG, "Error while trying to create new file contents");
-                return;
-            }
-
-            String mimeType = MimeTypeMap.getSingleton().getExtensionFromMimeType("db");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                    .setTitle("bucketlistbackup") // Google Drive File name
-                    .setMimeType(mimeType)
-                    .setStarred(true).build();
-            // create a file on root folder
-            Drive.DriveApi.getRootFolder(api)
-                    .createFile(api, changeSet, result.getDriveContents())
-                    .setResultCallback(fileCallback);
-        }
-
-    };
-
-    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
-
-        @Override
-        public void onResult(DriveFolder.DriveFileResult result) {
-            if (!result.getStatus().isSuccess()) {
-                Log.v(TAG, "Error while trying to create the file");
-                return;
-            }
-            mfile = result.getDriveFile();
-            mfile.open(api, DriveFile.MODE_WRITE_ONLY, null).setResultCallback(contentsOpenedCallback);
-        }
-    };
-
-    final private ResultCallback<DriveApi.DriveContentsResult> contentsOpenedCallback = new ResultCallback<DriveApi.DriveContentsResult>() {
-
-        @Override
-        public void onResult(DriveApi.DriveContentsResult result) {
-
-            if (!result.getStatus().isSuccess()) {
-                Log.v(TAG, "Error opening file");
-                return;
-            }
-
-            try {
-                FileInputStream is = new FileInputStream(getDbPath());
-                BufferedInputStream in = new BufferedInputStream(is);
-                byte[] buffer = new byte[8 * 1024];
-                DriveContents content = result.getDriveContents();
-                BufferedOutputStream out = new BufferedOutputStream(content.getOutputStream());
-                int n = 0;
-                while( ( n = in.read(buffer) ) > 0 ) {
-                    out.write(buffer, 0, n);
-                }
-
-                in.close();
-                content.commit(api,null).setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(@NonNull Status status) {
-
-                    }
-                });
-//                commitAndCloseContents is DEPRECATED -->*//**mfile.commitAndCloseContents(api, content).setResultCallback(new ResultCallback<Status>() {
-//                 @Override
-//                 public void onResult(Status result) {
-//                 // Handle the response status
-//                 }
-//                 });**//*
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-    };*/
-
-    private File getDbPath() {
-        return this.getDatabasePath(BucketListDBHelper.DATABASE_NAME);
     }
 
     public void wishSwiped(final RecyclerView.ViewHolder viewHolder){
@@ -982,10 +641,6 @@ private void restoreBackup(){
         super.onStart();
 
         mGoogleApiClient.connect();
-/*        if(mGoogleApiClient.isConnected())
-            Toast.makeText(this, "true", Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(this, "false", Toast.LENGTH_SHORT).show();*/
     }
 
     @Override
@@ -1005,30 +660,6 @@ private void restoreBackup(){
                     .build();
         }
         mGoogleApiClient.connect();
-    }
-
-    public void writeToFile(String fileName, String body) {
-        FileOutputStream fos = null;
-        try {
-            final File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/xtests/");
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    Log.e("ALERT", "U AR A MORON!  could not create the directories. CHECK THE FUCKING PERMISSIONS SON!");
-                }
-            }
-            final File myFile = new File(dir, fileName + "_" + String.valueOf(System.currentTimeMillis()) + ".txt");
-            if (!myFile.exists()) {
-                myFile.createNewFile();
-            }
-
-            fos = new FileOutputStream(myFile);
-            fos.write(body.getBytes());
-            fos.close();
-            Toast.makeText(MainActivity.this, "File created ok! Let me give you a fucking congratulations!", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -1081,8 +712,8 @@ private void restoreBackup(){
                     return getContentResolver().query(WishList.CONTENT_URI,
                             null,
                             selection,
-                            new String[]{""},
-                            WishList.COLUMN_TARGET_DATE);
+                            selectionArgs,
+                            sortOrder);
 
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to asynchronously load data.");
@@ -1110,37 +741,7 @@ private void restoreBackup(){
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        /*switch(item.getItemId()){
-            case R.id.close_wish_menu_item:
-                finish();
-                break;
-
-            case R.id.edit_wish_menu_item:
-                Intent intent = new Intent(ViewWishActivity.this, WishHandlingActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, wishId);
-
-                startActivity(intent);
-        }*/
-        return true;
-    }
-
-
-
-
-
-
-
-    @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_LONG).show();
-//        Drive.DriveApi.newDriveContents(api).setResultCallback(contentsCallback);
     }
 
     @Override
@@ -1150,99 +751,148 @@ private void restoreBackup(){
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(this, getString(R.string.connection_failed), Toast.LENGTH_SHORT).show();
         if (connectionResult.hasResolution()) {
             try {
-                connectionResult.startResolutionForResult(this, RESOLVE_CONNECTION_REQUEST_CODE);
+                // !!!
+                connectionResult.startResolutionForResult(this, 1000);
             } catch (IntentSender.SendIntentException e) {
-                // Unable to resolve, message user appropriately
-            }
-        } else {
-            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this, 0).show();
-        }
+                Toast.makeText(this, getString(R.string.no_access_to_account), Toast.LENGTH_SHORT).show();
+            }}
     }
 
 
-    /*@Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == DIALOG_ERROR_CODE) {
-            if (resultCode == RESULT_OK) { // Error was resolved, now connect to the client if not done so.
-                if (!mGoogleApiClient.isConnecting() && !mGoogleApiClient.isConnected()) {
-                    mGoogleApiClient.connect();
-                }
-            }
-
-        }
-        if (requestCode == REQ_CODE_OPEN && resultCode == RESULT_OK) {
-            DriveId mSelectedFileDriveId = data.getParcelableExtra(
-                    OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-            Log.e("DriveID ---", mSelectedFileDriveId + "");
-            Gson gson = new Gson();
-            String json = gson.toJson(mSelectedFileDriveId); // myObject - instance of MyObject
-            SharedPreferences.Editor editor_drive = preferences_driverId.edit();
-            editor_drive.putString("drive_id", json).commit();
-            Log.e(TAG, "driveId this 1-- " + mSelectedFileDriveId);
-            if (Utils.isInternetWorking(this)) {
-                //restore Drive file to SDCArd
-                Driver_utils.restoreDriveBackup(this, mGoogleApiClient, GOOGLE_DRIVE_FILE_NAME, preferences_driverId, mfile);
-                Driver_utils.restore(this);
-
-            } else {
-                Toast.makeText(getApplicationContext(), "no internt", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (resultCode == RESOLVE_CONNECTION_REQUEST_CODE && resultCode == RESULT_OK) {
-            mGoogleApiClient.connect();
-        }
-
-    }*/
-
-
-    protected static final int REQUEST_CODE_RESOLUTION = 1337;
     @Override
-    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if (requestCode == REQUEST_CODE_RESOLUTION && resultCode == RESULT_OK) {
-            mGoogleApiClient.connect();
-        }
-        switch (requestCode) {
-            case 1:
-                if (resultCode == RESULT_OK) {
-Toast.makeText(this, "1", Toast.LENGTH_SHORT).show();
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key){
+            case "select_toolbar_image":
+                String previouslyEncodedImage = sharedPreferences.getString("select_toolbar_image", "");
+
+                if( !previouslyEncodedImage.equalsIgnoreCase("") ){
+                    byte[] b = Base64.decode(previouslyEncodedImage, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+
+                    BitmapDrawable dd = new BitmapDrawable(getResources(), bitmap);
+
+                    if(bitmap.getHeight()>=bitmap.getWidth())
+                        dd.setGravity(Gravity.FILL_HORIZONTAL);
+                    else
+                        dd.setGravity(Gravity.FILL);
+                    Drawable dff = dd;
+
+                    mainToolbar.setBackground(dff);
                 }
                 break;
-            // REQUEST_CODE_PICKER
-            case 2:
-//                intentPicker = null;
-                Toast.makeText(this, "2", Toast.LENGTH_SHORT).show();
-//
-//                if (resultCode == RESULT_OK) {
-//                    //Get the folder drive id
-//                    DriveId mFolderDriveId = data.getParcelableExtra(
-//                            OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-//
-//                    uploadToDrive(mFolderDriveId);
-//                }
-                break;
+            case "select_drawer_image":
+                String previouslyEncodedImageDrawer = sharedPreferences.getString("select_drawer_image", "");
 
-            // REQUEST_CODE_SELECT
-            case 3:
-             /*   if (resultCode == RESULT_OK) {
-                    Toast.makeText(this, "3", Toast.LENGTH_SHORT).show();
-                    // get the selected item's ID
-                    DriveId driveId = data.getParcelableExtra(
-                            OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+                if( !previouslyEncodedImageDrawer.equalsIgnoreCase("") ){
+                    byte[] b = Base64.decode(previouslyEncodedImageDrawer, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
 
-                    DriveFile file = driveId.asDriveFile();
-                    downloadFromDrive(file);
+                    BitmapDrawable dd = new BitmapDrawable(getResources(), bitmap);
+                    if(bitmap.getHeight()>=bitmap.getWidth())
+                        dd.setGravity(Gravity.FILL_HORIZONTAL);
+                    else
+                        dd.setGravity(Gravity.FILL);
 
-                } else {
+                    Drawable dff = dd;
+
+                    headerDrawer.setBackground(dff);
 
                 }
-                finish();*/
                 break;
-
         }
     }
 
+    int checkedButton = 3;
+
+    public void onOrderToolbarButton(View view){
+        // custom dialog
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.radiobutton_dialog);
 
 
+        final List<String> stringList=new ArrayList<>();  // here is list
+        stringList.add(getString(R.string.title));
+        stringList.add(getString(R.string.category));
+        stringList.add(getString(R.string.price));
+        stringList.add(getString(R.string.target_date));
+
+        RadioGroup rg = (RadioGroup) dialog.findViewById(R.id.radio_group);
+
+        for(int i=0;i<stringList.size();i++){
+            RadioButton rb=new RadioButton(this); // dynamically creating RadioButton and adding to RadioGroup.
+            rb.setText(stringList.get(i));
+            rb.setTextSize(18);
+            rg.addView(rb);
+        }
+
+        rg.check(rg.getChildAt(checkedButton).getId());
+        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                int childCount = group.getChildCount();
+                for (int x = 0; x < childCount; x++) {
+                    RadioButton btn = (RadioButton) group.getChildAt(x);
+                    if (btn.getId() == checkedId) {
+                        checkedButton = x;
+                        String title = btn.getText().toString();
+                        switch(title){
+                            case "Title":
+                                sortOrder = WishList.COLUMN_TITLE;
+                                break;
+                            case "Category":
+                                sortOrder = WishList.COLUMN_CATEGORY;
+                                break;
+                            case "Price":
+                                sortOrder = WishList.COLUMN_PRICE;
+                                break;
+                            case "Target Date":
+                                sortOrder = WishList.COLUMN_TARGET_DATE;
+                                break;
+                        }
+                        getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
+                        dialog.hide();
+                    }
+                }
+            }
+        });
+
+        dialog.show();
+    }
+
+    public void onSearchToolbarButton(View view){
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle(getString(R.string.search));
+
+// Set up the input
+        final EditText input = new EditText(MainActivity.this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        final String[] m_Text = {""};
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text[0] = input.getText().toString();
+                if(!m_Text[0].equals("")){
+                    selection = WishList.COLUMN_TITLE + " like ?";
+                    selectionArgs = new String[]{"%"+m_Text[0]+"%"};
+                    getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
+                    drawer.closeDrawer();
+                }
+            }
+        });
+        builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
 }

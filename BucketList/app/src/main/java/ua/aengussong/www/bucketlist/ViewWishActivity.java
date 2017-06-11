@@ -3,21 +3,19 @@ package ua.aengussong.www.bucketlist;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.support.constraint.ConstraintLayout;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,7 +32,8 @@ import java.util.Date;
 import java.util.Locale;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
-import ua.aengussong.www.bucketlist.database.BucketListContracts.*;
+import ua.aengussong.www.bucketlist.database.BucketListContracts.Milestone;
+import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 import ua.aengussong.www.bucketlist.utilities.DbQuery;
 
@@ -49,6 +48,7 @@ public class ViewWishActivity extends AppCompatActivity {
     TextView viewDescription;
     TextView viewPrice;
     TextView viewTargetDate;
+    TextView viewMilestonesTitle;
 
     LinearLayout viewLinearLayout;
 
@@ -69,6 +69,7 @@ public class ViewWishActivity extends AppCompatActivity {
         viewDescription = (TextView) findViewById(R.id.view_wish_description);
         viewPrice = (TextView) findViewById(R.id.view_wish_price);
         viewTargetDate = (TextView) findViewById(R.id.view_wish_target_date);
+        viewMilestonesTitle = (TextView) findViewById(R.id.view_wish_milestones);
 
         achievedButton = (Button) findViewById(R.id.view_wish_achieved_button);
 
@@ -173,7 +174,6 @@ public class ViewWishActivity extends AppCompatActivity {
             achievedButton.setVisibility(INVISIBLE);
     }
 
-
     public void achievedClicked(View view){
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -192,8 +192,13 @@ public class ViewWishActivity extends AppCompatActivity {
 
                         getContentResolver().delete(Milestone.CONTENT_URI, Milestone.COLUMN_WISH + "=?", new String[]{wishId});
 
-                        MediaPlayer.create(ViewWishActivity.this, R.raw.achieved).start();
                         CommonConfetti.rainingConfetti(container, new int[]{Color.BLUE, Color.GREEN, Color.YELLOW}).stream(5_000);
+
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ViewWishActivity.this);
+                        boolean sound = sharedPreferences.getBoolean("achieved_sound", true);
+                        if(sound) {
+                            MediaPlayer.create(ViewWishActivity.this, R.raw.achieved).start();
+                        }
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:
@@ -222,8 +227,10 @@ public class ViewWishActivity extends AppCompatActivity {
         Cursor milestoneCursor = getContentResolver().query(baseMilestoneUri, null,
                 BucketListContracts.Milestone.COLUMN_WISH + "=?", new String[]{id}, null);
 
-        if(milestoneCursor.getCount() == 0)
+        if(milestoneCursor.getCount() == 0) {
+            viewMilestonesTitle.setVisibility(View.INVISIBLE);
             return;
+        }
 
         milestoneCursor.moveToFirst();
         while(!milestoneCursor.isAfterLast()){

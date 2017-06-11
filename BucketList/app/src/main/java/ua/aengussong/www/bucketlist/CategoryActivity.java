@@ -3,21 +3,14 @@ package ua.aengussong.www.bucketlist;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -25,22 +18,10 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
-
-import com.mikepenz.materialdrawer.Drawer;
-import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.model.DividerDrawerItem;
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
-import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
-import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 
 public class CategoryActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -126,38 +107,14 @@ public class CategoryActivity extends AppCompatActivity implements LoaderManager
             // Called when a user swipes left or right on a ViewHolder
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                // Here is where you'll implement swipe to delete
-
-                // COMPLETED (1) Construct the URI for the item to delete
-                //[Hint] Use getTag (from the adapter code) to get the id of the swiped item
-                // Retrieve the id of the task to delete
-                int id = (int) viewHolder.itemView.getTag();
-
-                // Build appropriate uri with String row id appended
-                String stringId = Integer.toString(id);
-                Uri uri = BucketListContracts.Category.CONTENT_URI;
-                uri = uri.buildUpon().appendPath(stringId).build();
-
-                // COMPLETED (2) Delete a single row of data using a ContentResolver
-                /*ContentValues cv = new ContentValues();
-                cv.put(BucketListContracts.WishList.COLUMN_CATEGORY, "");
-
-                getContentResolver().update(BucketListContracts.WishList.CONTENT_URI, cv,
-                        BucketListContracts.WishList.COLUMN_CATEGORY + "=?", new String[]{stringId});*/
-
-                getContentResolver().delete(uri, null, null);
-
-
-                // COMPLETED (3) Restart the loader to re-query for all tasks after a deletion
-                getSupportLoaderManager().restartLoader(CATEGORY_LOADER_ID, null, CategoryActivity.this);
-
+                categorySwiped(viewHolder);
             }
         }).attachToRecyclerView(recyclerView);
 
         getSupportLoaderManager().initLoader(CATEGORY_LOADER_ID, null, this);
     }
 
-    public void wishSwiped(final RecyclerView.ViewHolder viewHolder){
+    public void categorySwiped(final RecyclerView.ViewHolder viewHolder){
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

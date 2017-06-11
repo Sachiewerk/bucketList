@@ -9,7 +9,6 @@
     android:background="@color/colorPrimary"
     android:fillViewport="true">
 <android.support.constraint.ConstraintLayout
-    android:id="@+id/add_wish_constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ua.aengussong.www.bucketlist.WishHandlingActivity"
@@ -207,6 +206,7 @@
         android:textSize="22sp"
         android:layout_height="wrap_content"
         android:text="@string/add"
+        android:textColor="@color/md_white_1000"
         app:layout_constraintTop_toBottomOf="@+id/llrv"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -223,6 +223,7 @@
         android:textSize="22sp"
         android:layout_height="wrap_content"
         android:text="@string/update"
+        android:textColor="@color/md_white_1000"
         app:layout_constraintTop_toBottomOf="@+id/llrv"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"

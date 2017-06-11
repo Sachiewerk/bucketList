@@ -1,9 +1,7 @@
 package ua.aengussong.www.bucketlist;
 
-import android.app.usage.NetworkStats;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;

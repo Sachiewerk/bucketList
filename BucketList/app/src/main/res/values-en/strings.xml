@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BucketList</string>
+    <string name="achieved">Achieved</string>
+    <string name="achieved_sound">Achieved sound</string>
+    <string name="add">Add</string>
+    <string name="add_milestones">Add Milestones</string>
+    <string name="add_wish">Add Your Wish</string>
+    <string name="are_you_sure">Are You Sure?</string>
+    <string name="backup">Backup</string>
+    <string name="bad">Something went wrong</string>
+    <string name="category">Category</string>
+    <string name="changes_applied">Changes Applied</string>
+    <string name="choose_target_date">Choose Target Date</string>
+    <string name="connect_google_drive">Connect to Google Drive</string>
+    <string name="couldnt_connect_to_google_manager">Could not coonect to Google Drive Manager</string>
+    <string name="downloading_backup">Downloading backup. Please stand by</string>
+    <string name="edit_wish">Edit Your Wish</string>
+    <string name="havent_picked_image">You Haven\'t Picked Image</string>
+    <string name="hint_category">Category:</string>
+    <string name="hint_description">Description:</string>
+    <string name="hint_price">Price:</string>
+    <string name="hint_target_date">Target Date:</string>
+    <string name="hint_title">Title:</string>
+    <string name="language">Language:</string>
+    <string name="milestones">Milestones:</string>
+    <string name="no">No</string>
+    <string name="no_backups">No backups available</string>
+    <string name="restore">Restore</string>
+    <string name="select_drawer_image">Select Drawer Image</string>
+    <string name="select_main_toolbar_image">Select Main Toolbar Image</string>
+    <string name="settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="update">Update</string>
+    <string name="upload">Upload to Google Drive. Wait a moment</string>
+    <string name="yes">Yes</string>
+    <string name="your_wish">Your Wish, Master</string>
+
+    <string-array name="category_init">
+        <item>Travel</item>
+        <item>Health</item>
+        <item>Work</item>
+        <item>Learning</item>
+        <item>Love</item>
+    </string-array>
+    <string name="cash">Cash</string>
+    <string name="enter_cash">Enter cash amount:</string>
+    <string name="inspiration">Inspirational Quotes</string>
+    <string name="price">Price</string>
+    <string name="search">Search</string>
+    <string name="sort_by">Sort by</string>
+    <string name="target_date">Target Date</string>
+    <string name="title">Title</string>
+</resources>

@@ -2,7 +2,6 @@ package ua.aengussong.www.bucketlist;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.widget.RecyclerView;
@@ -10,12 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-
-import ua.aengussong.www.bucketlist.database.BucketListContracts;
 
 /**
  * Created by coolsmileman on 02.06.2017.

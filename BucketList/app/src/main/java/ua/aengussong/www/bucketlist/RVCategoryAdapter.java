@@ -3,11 +3,7 @@ package ua.aengussong.www.bucketlist;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +14,6 @@ import android.widget.TextView;
 import java.util.Random;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
-import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
-import ua.aengussong.www.bucketlist.utilities.DbQuery;
 
 /**
  * Created by coolsmileman on 06.06.2017.

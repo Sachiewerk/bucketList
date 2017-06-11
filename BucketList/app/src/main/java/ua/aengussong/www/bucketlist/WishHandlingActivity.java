@@ -1,49 +1,41 @@
 package ua.aengussong.www.bucketlist;
 
-import android.graphics.PorterDuff;
-import android.support.v4.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import ua.aengussong.www.bucketlist.RVAddMilestoneAdapter.MilestoneViewHolder;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 import ua.aengussong.www.bucketlist.utilities.BlurBuilder;
 import ua.aengussong.www.bucketlist.utilities.DatePicker;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
-import ua.aengussong.www.bucketlist.RVAddMilestoneAdapter.*;
 import ua.aengussong.www.bucketlist.utilities.DbQuery;
-
-import static ua.aengussong.www.bucketlist.utilities.DbQuery.updateMilestone;
 
 
 public class WishHandlingActivity extends AppCompatActivity {
@@ -135,10 +127,12 @@ public class WishHandlingActivity extends AppCompatActivity {
                                               KeyEvent event) {
                     if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
                             || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                        if(!add_milestone_edit.getText().equals("")){
                         milestonesArrayList.add(add_milestone_edit.getText().toString());
                         adapter.notifyDataSetChanged();
                         add_milestone_edit.setText("");
                         return true;
+                        }
                     }
                     return false;
                 }
@@ -208,6 +202,7 @@ public class WishHandlingActivity extends AppCompatActivity {
                                           KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
                         || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    if(!add_milestone_edit.getText().equals("")){
                     ContentValues cv = new ContentValues();
                     cv.put(BucketListContracts.Milestone.COLUMN_TITLE, add_milestone_edit.getText().toString());
                     cv.put(BucketListContracts.Milestone.COLUMN_WISH, editedWishId);
@@ -218,6 +213,7 @@ public class WishHandlingActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
                     add_milestone_edit.setText("");
                     return true;
+                    }
                 }
                 return false;
             }
@@ -253,7 +249,7 @@ public class WishHandlingActivity extends AppCompatActivity {
         Uri uri = WishList.CONTENT_URI;
         uri = uri.buildUpon().appendPath(wishId).build();
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        if(cursor.getCount() == 0){ Toast.makeText(this, "fucker", Toast.LENGTH_LONG).show();
+        if(cursor.getCount() == 0){ Toast.makeText(this, getString(R.string.bad), Toast.LENGTH_LONG).show();
             finish();}
         cursor.moveToFirst();
         String title = cursor.getString(cursor.getColumnIndex(WishList.COLUMN_TITLE));
@@ -328,10 +324,10 @@ public class WishHandlingActivity extends AppCompatActivity {
 
                 backgroundWishImage.setImageBitmap(blurredImage);
             } else{
-                Toast.makeText(this,"You Haven't Picked Image", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.havent_picked_image), Toast.LENGTH_SHORT).show();
             }
         } catch(Exception e){
-                Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.bad), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -364,8 +360,6 @@ public class WishHandlingActivity extends AppCompatActivity {
             return;
         int updateWish = getContentResolver().update(uri, cv , null, null);
 
-        Toast.makeText(this, updateWish+"", Toast.LENGTH_SHORT);
-
         finish();
     }
 
@@ -376,7 +370,6 @@ public class WishHandlingActivity extends AppCompatActivity {
         Uri uri = getContentResolver().insert(WishList.CONTENT_URI, cv);
 
         if(uri != null){
-            Toast.makeText(this,uri.toString(),Toast.LENGTH_SHORT).show();
             milestoneWishId = Long.parseLong(uri.getLastPathSegment());
 
             insertMilestones();
@@ -447,9 +440,6 @@ public class WishHandlingActivity extends AppCompatActivity {
                 cv.put(BucketListContracts.Milestone.COLUMN_WISH, milestoneWishId);
                 Uri uri = getContentResolver().insert(BucketListContracts.Milestone.CONTENT_URI, cv);
 
-                if(uri != null) {
-                    Toast.makeText(this, uri.toString(), Toast.LENGTH_SHORT).show();
-                }
             }
         }
     }

@@ -5,9 +5,17 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_marginTop="12dp"
+
             android:background="@color/md_white_1000"
             >
+    <!--android:layout_marginTop="12dp"-->
+    <View
+        android:id="@+id/delimiter_view"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:background="@color/md_grey_400"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
             <ImageView
                 tools:src="@mipmap/ic_launcher"
                 android:contentDescription="Image for your wish"
@@ -16,7 +24,7 @@
                 android:id="@+id/rv_wish_photo"
                 app:layout_constraintLeft_toLeftOf="parent"
                 android:scaleType="centerCrop"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/delimiter_view" />
             <TextView
                 tools:text="Skydiving"
                 android:maxWidth="200dp"
