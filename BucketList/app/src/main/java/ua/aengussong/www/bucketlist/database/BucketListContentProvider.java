@@ -39,7 +39,6 @@ public class BucketListContentProvider extends ContentProvider {
 
         uriMatcher.addURI(BucketListContracts.AUTHORITY, BucketListContracts.PATH_MILESTONE, MILESTONES);
         uriMatcher.addURI(BucketListContracts.AUTHORITY, BucketListContracts.PATH_MILESTONE + "/#", MILESTONES_WITH_ID);
-        //uriMatcher.addURI(BucketListContracts.AUTHORITY, BucketListContracts.PATH_MILESTONE + "/wish/#", MILESTONES_WITH_WISH);
 
         uriMatcher.addURI(BucketListContracts.AUTHORITY, BucketListContracts.PATH_CATEGORY, CATEGORIES);
         uriMatcher.addURI(BucketListContracts.AUTHORITY, BucketListContracts.PATH_CATEGORY + "/#", CATEGORIES_WITH_ID);

@@ -455,4 +455,10 @@
     <string name="sort_by">Сортировать по</string>
     <string name="target_date">Целевая дата</string>
     <string name="title">Название</string>
+    <string name="connection_failed">Не удалось подключиться к Google Диску</string>
+    <string name="enable_lock">Блокировка экрана не включена в настройках смартфона</string>
+    <string name="fingerprint_failed">Идентификация не удалась</string>
+    <string name="no_access_to_account">Не удалось получить доступ к аккаунту</string>
+    <string name="place_finger">Пожалуйста прижмите ваш палец к сканеру что бы идентифицировать вашу личность</string>
+    <string name="register_fingerprint">Зарегестрируйте хотя бы один отпечаток пальца что бы обеспечить безопасность данных</string>
 </resources>

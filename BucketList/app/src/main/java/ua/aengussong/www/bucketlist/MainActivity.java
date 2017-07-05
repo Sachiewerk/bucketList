@@ -56,6 +56,7 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.google.api.client.util.IOUtils;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -66,6 +67,7 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -73,9 +75,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
@@ -121,18 +130,22 @@ public class MainActivity extends AppCompatActivity
 
     GoogleApiClient mGoogleApiClient;
 
-
     private String FOLDER_NAME = "BL_BACKUP";
 
     private String TAG = "bucketlist_backup";
-
-    GoogleSignInOptions gso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent fingerIntent = getIntent();
+
+        if(fingerIntent.hasExtra(Intent.EXTRA_TEXT)){
+            String text = fingerIntent.getStringExtra(Intent.EXTRA_TEXT);
+            Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+        }
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
@@ -458,6 +471,25 @@ public class MainActivity extends AppCompatActivity
 
                 OutputStream outputStream = driveContentsResult.getDriveContents().getOutputStream();
 
+
+                byte[] keyStart = "aengussong".getBytes();
+                KeyGenerator kgen = null;
+                try {
+                    kgen = KeyGenerator.getInstance("AES");
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+                SecureRandom sr = null;
+                try {
+                    sr = SecureRandom.getInstance("SHA1PRNG");
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+                sr.setSeed(keyStart);
+                kgen.init(128, sr); // 192 and 256 bits may not be available
+                SecretKey skey = kgen.generateKey();
+                byte[] key = skey.getEncoded();
+
                 Toast.makeText(MainActivity.this, getString(R.string.upload), Toast.LENGTH_LONG).show();
                 final File theFile = new File(getDatabasePath(BucketListDBHelper.DATABASE_NAME).toString());
                 try {
@@ -486,7 +518,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
-
 
     private void get_file_from_db(DriveId driveId){
         DriveFile df = driveId.asDriveFile();
@@ -574,11 +605,6 @@ public class MainActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        // Here is where you'll implement swipe to delete
-
-                        // COMPLETED (1) Construct the URI for the item to delete
-                        //[Hint] Use getTag (from the adapter code) to get the id of the swiped item
-                        // Retrieve the id of the task to delete
                         int id = (int) viewHolder.itemView.getTag();
 
                         // Build appropriate uri with String row id appended
@@ -586,12 +612,12 @@ public class MainActivity extends AppCompatActivity
                         Uri uri = WishList.CONTENT_URI;
                         uri = uri.buildUpon().appendPath(stringId).build();
 
-                        // COMPLETED (2) Delete a single row of data using a ContentResolver
+                        //Delete a single row of data using a ContentResolver
                         getContentResolver().delete(uri, null, null);
 
                         refreshBucketAchievedDrawerItem();
 
-                        // COMPLETED (3) Restart the loader to re-query for all tasks after a deletion
+                        //Restart the loader to re-query for all tasks after a deletion
                         getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
                         break;
 
@@ -705,9 +731,7 @@ public class MainActivity extends AppCompatActivity
             public Cursor loadInBackground() {
                 // Will implement to load data
 
-                // Query and load all task data in the background; sort by priority
-                // [Hint] use a try/catch block to catch any errors in loading data
-
+                // Query and load all data in the background
                 try {
                     return getContentResolver().query(WishList.CONTENT_URI,
                             null,
@@ -761,7 +785,6 @@ public class MainActivity extends AppCompatActivity
             }}
     }
 
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
@@ -812,13 +835,16 @@ public class MainActivity extends AppCompatActivity
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.radiobutton_dialog);
 
+        final String titleOrderDialog = getString(R.string.title);
+        final String categoryOrderDialog = getString(R.string.category);
+        final String priceOrderDialog = getString(R.string.price);
+        final String targetDateOrderDialog = getString(R.string.target_date);
 
         final List<String> stringList=new ArrayList<>();  // here is list
-        stringList.add(getString(R.string.title));
-        stringList.add(getString(R.string.category));
-        stringList.add(getString(R.string.price));
-        stringList.add(getString(R.string.target_date));
-
+        stringList.add(titleOrderDialog);
+        stringList.add(categoryOrderDialog);
+        stringList.add(priceOrderDialog);
+        stringList.add(targetDateOrderDialog);
         RadioGroup rg = (RadioGroup) dialog.findViewById(R.id.radio_group);
 
         for(int i=0;i<stringList.size();i++){
@@ -839,20 +865,15 @@ public class MainActivity extends AppCompatActivity
                     if (btn.getId() == checkedId) {
                         checkedButton = x;
                         String title = btn.getText().toString();
-                        switch(title){
-                            case "Title":
-                                sortOrder = WishList.COLUMN_TITLE;
-                                break;
-                            case "Category":
-                                sortOrder = WishList.COLUMN_CATEGORY;
-                                break;
-                            case "Price":
-                                sortOrder = WishList.COLUMN_PRICE;
-                                break;
-                            case "Target Date":
+                        if(title.equals(titleOrderDialog)) {
+                            sortOrder = WishList.COLUMN_TITLE;
+                        } else if(title.equals(categoryOrderDialog)) {
+                            sortOrder = WishList.COLUMN_CATEGORY;
+                        } else if(title.equals(priceOrderDialog)) {
+                            sortOrder = WishList.COLUMN_PRICE;
+                        }else if(title.equals(targetDateOrderDialog))
                                 sortOrder = WishList.COLUMN_TARGET_DATE;
-                                break;
-                        }
+
                         getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
                         dialog.hide();
                     }
@@ -894,5 +915,21 @@ public class MainActivity extends AppCompatActivity
         });
 
         builder.show();
+    }
+
+    private static byte[] encrypt(byte[] raw, byte[] clear) throws Exception {
+        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+        byte[] encrypted = cipher.doFinal(clear);
+        return encrypted;
+    }
+
+    private static byte[] decrypt(byte[] raw, byte[] encrypted) throws Exception {
+        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+        byte[] decrypted = cipher.doFinal(encrypted);
+        return decrypted;
     }
 }

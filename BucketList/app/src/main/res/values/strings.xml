@@ -43,7 +43,11 @@
     <string name="search">Search</string>
     <string name="inspiration">Inspirational Quotes</string>
     <string name="connection_failed">Connection to Google Drive failed</string>
-    <string name="no_access_to_account">Can\'t get  get access to account</string>
+    <string name="no_access_to_account">Can\'t get access to account</string>
+    <string name="place_finger">Please place your finger on the scanner to verify your identity</string>
+    <string name="register_fingerprint">Register at least one fingerprint to secure this app</string>
+    <string name="enable_lock">Lock screen security not enabled in smartphone settings</string>
+    <string name="fingerprint_failed">Fingerprint authentication failed!</string>
 
     <string-array name="category_init">
         <item>Travel</item>
