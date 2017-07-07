@@ -24,7 +24,6 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
 
     private Cursor cursor;
     private Context context;
-    private WishViewHolder wishViewHolder;
 
     RVMainAdapter(Context context, WishClickListener listener){
         onWishClickListener = listener;
@@ -35,7 +34,6 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
     public WishViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.wishes_list_layout,parent,false);
-        wishViewHolder = new WishViewHolder(view);
         return new WishViewHolder(view);
     }
 

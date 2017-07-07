@@ -174,6 +174,7 @@ public class MainActivity extends AppCompatActivity
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         toolbarTitle = (TextView) findViewById(R.id.main_toolbar_title);
 
+
         SharedPreferences shre = PreferenceManager.getDefaultSharedPreferences(this);
 
         shre.registerOnSharedPreferenceChangeListener(this);
@@ -311,9 +312,7 @@ public class MainActivity extends AppCompatActivity
                                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                                 builder.setTitle(getString(R.string.enter_cash));
 
-// Set up the input
                                 final EditText input = new EditText(MainActivity.this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
                                 input.setInputType(InputType.TYPE_CLASS_NUMBER);
                                 builder.setView(input);
 
@@ -917,19 +916,4 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
-    private static byte[] encrypt(byte[] raw, byte[] clear) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-        byte[] encrypted = cipher.doFinal(clear);
-        return encrypted;
-    }
-
-    private static byte[] decrypt(byte[] raw, byte[] encrypted) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-        byte[] decrypted = cipher.doFinal(encrypted);
-        return decrypted;
-    }
 }

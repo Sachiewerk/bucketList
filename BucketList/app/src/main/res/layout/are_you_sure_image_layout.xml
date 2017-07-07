@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
         android:textColor="@color/md_black_1000"/>
     <ImageView
         android:layout_width="150dp"
