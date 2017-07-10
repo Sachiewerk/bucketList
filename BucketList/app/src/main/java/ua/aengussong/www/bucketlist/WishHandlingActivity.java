@@ -7,8 +7,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
@@ -70,7 +72,10 @@ public class WishHandlingActivity extends AppCompatActivity {
     private long milestoneWishId;
 
     private String editedWishId;
+    //flag to show that new image was added and need to be compressed
+    private boolean newImage = false;
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -186,6 +191,7 @@ public class WishHandlingActivity extends AppCompatActivity {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void goEditMode(String wishId){
 
         toolbarTitle.setText(getString(R.string.edit_wish));
@@ -298,10 +304,12 @@ public class WishHandlingActivity extends AppCompatActivity {
     }
 
     public void loadImageFromGallery(View view){
+        newImage = true;
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -409,12 +417,15 @@ public class WishHandlingActivity extends AppCompatActivity {
 
         byte[] bytes = null;
         if(galleryImage != null){
-            //with large images CursorIndexOutOfBoundException was thrown, decided to scale images
-            //to solve problem
-            int nh = (int) ( galleryImage.getHeight() * (512.0 / galleryImage.getWidth()) );
-            Bitmap scaled = Bitmap.createScaledBitmap(galleryImage, 512, nh, true);
+            if(newImage) {
+                //with large images CursorIndexOutOfBoundException was thrown, decided to scale images
+                //to solve problem
+                int nh = (int) (galleryImage.getHeight() * (512.0 / galleryImage.getWidth()));
+                Bitmap scaled = Bitmap.createScaledBitmap(galleryImage, 512, nh, true);
 
-            bytes = DbBitmapUtility.getBytes(scaled);
+                bytes = DbBitmapUtility.getBytes(scaled);
+            } else
+                bytes = DbBitmapUtility.getBytes(galleryImage);
         }
         contentValues.put(WishList.COLUMN_IMAGE, bytes);
 
