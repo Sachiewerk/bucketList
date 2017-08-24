@@ -160,4 +160,8 @@
     <string name="no_access_to_account">Не вдалось отримати доступ до аккаунту</string>
     <string name="place_finger">Будь ласка притисніть Ваш палець до сканеру для ідентифікації</string>
     <string name="register_fingerprint">Зареєструйте хоча б один відбиток пальця</string>
+    <string name="notification">Оповiщення</string>
+    <string name="notifications">Оповiщення</string>
+    <string name="security">Захист</string>
+    <string name="upcoming_wishes">Наступаючi бажання</string>
 </resources>

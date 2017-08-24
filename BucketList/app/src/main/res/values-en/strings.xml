@@ -57,4 +57,8 @@
     <string name="fingerprint_failed">Finger authentication failed!</string>
     <string name="place_finger">Please place your finger on the scanner to verify your identity</string>
     <string name="register_fingerprint">Register at least one fingerprint to secure this app</string>
+    <string name="notification">Notification</string>
+    <string name="notifications">Notifications</string>
+    <string name="security">Security</string>
+    <string name="upcoming_wishes">You have upcoming wishes</string>
 </resources>

@@ -45,12 +45,14 @@ public class DatePicker extends DialogFragment
         return picker;
     }
 
-    private String getDateTime(int year, int month, int day) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Calendar c = Calendar.getInstance();
-        c.set(year,month,day);
-        Date date = c.getTime();
-        return dateFormat.format(date);
+    public static String getDateTime(int year, int month, int day) {
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+//        Calendar c = Calendar.getInstance();
+//        c.set(year,month,day);
+//        Date date = c.getTime();
+//        return dateFormat.format(date);
+        String date = year + "-" + month + "-" + day;
+        return date;
     }
 
     @Override

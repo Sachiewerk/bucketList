@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.adapters;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -12,18 +12,20 @@ import android.widget.CheckBox;
 
 import java.util.ArrayList;
 
+import ua.aengussong.www.bucketlist.R;
+
 /**
  * Created by coolsmileman on 02.06.2017.
  */
 
 public class RVAddMilestoneAdapter extends RecyclerView.Adapter<RVAddMilestoneAdapter.MilestoneViewHolder>{
 
-    private Context context;
-    private MilestoneViewHolder milestoneViewHolder;
+    public Context context;
+    public MilestoneViewHolder milestoneViewHolder;
 
-    private ArrayList<String> milestonesArrayList;
+    public ArrayList<String> milestonesArrayList;
 
-    RVAddMilestoneAdapter(Context context, ArrayList<String> milestones){
+    public RVAddMilestoneAdapter(Context context, ArrayList<String> milestones){
         this.context = context;
         milestonesArrayList = milestones;
     }
@@ -55,7 +57,7 @@ holder.itemView.setTag(id);
     }
 
     public class MilestoneViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        CheckBox newMilestone;
+        public CheckBox newMilestone;
 
         public MilestoneViewHolder(View itemView) {
             super(itemView);

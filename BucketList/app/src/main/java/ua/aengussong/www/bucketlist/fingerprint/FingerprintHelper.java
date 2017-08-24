@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.fingerprint;
 
 import android.Manifest;
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.CancellationSignal;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+
+import ua.aengussong.www.bucketlist.activity.MainActivity;
 
 /**
  * Created by coolsmileman on 13.06.2017.

@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.fingerprint;
 
 import android.app.KeyguardManager;
 import android.content.Intent;
@@ -11,7 +11,6 @@ import android.security.keystore.KeyProperties;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -27,6 +26,9 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+
+import ua.aengussong.www.bucketlist.R;
+import ua.aengussong.www.bucketlist.activity.MainActivity;
 
 public class FingerprintCheck extends AppCompatActivity {
 

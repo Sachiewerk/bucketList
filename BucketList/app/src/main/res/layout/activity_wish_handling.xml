@@ -11,7 +11,7 @@
 <android.support.constraint.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ua.aengussong.www.bucketlist.WishHandlingActivity"
+    tools:context="ua.aengussong.www.bucketlist.activity.WishHandlingActivity"
     android:background="@color/colorPrimary"
 
     >
@@ -34,13 +34,7 @@
         android:layout_width="0dp"
         android:layout_height="56dp"
         app:theme="@style/MyToolbar">
-        <TextView
-            android:id="@+id/wish_handling_toolbar_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/md_white_1000"
-            android:text="@string/add_wish"
-            android:textSize="25sp" />
+
         <ImageButton
     android:src="@drawable/ic_action_close"
     android:layout_width="wrap_content"
@@ -48,6 +42,13 @@
     android:layout_gravity = "start"
     android:background="@null"
     android:onClick="onCloseMenuButton"/>
+        <TextView
+            android:id="@+id/wish_handling_toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/md_white_1000"
+            android:text="@string/add_wish"
+            android:textSize="25sp" />
     </android.support.v7.widget.Toolbar>
 
     <ImageButton

@@ -12,4 +12,17 @@
     <Preference
         android:key="select_drawer_image"
         android:title="@string/select_drawer_image" />
+    <CheckBoxPreference
+        android:title="@string/notifications"
+        android:defaultValue="true"
+        android:summaryOff="Off"
+        android:summaryOn="On"
+        android:key="notification" />
+    <CheckBoxPreference
+        android:title="@string/security"
+        android:defaultValue="true"
+        android:summaryOff="Off"
+        android:summaryOn="On"
+        android:key="security" />
+
 </PreferenceScreen>

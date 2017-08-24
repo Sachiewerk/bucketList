@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import ua.aengussong.www.bucketlist.R;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 import ua.aengussong.www.bucketlist.utilities.DbQuery;
@@ -25,7 +26,7 @@ public class RVMainAdapter extends RecyclerView.Adapter<RVMainAdapter.WishViewHo
     private Cursor cursor;
     private Context context;
 
-    RVMainAdapter(Context context, WishClickListener listener){
+    public RVMainAdapter(Context context, WishClickListener listener){
         onWishClickListener = listener;
         this.context = context;
     }

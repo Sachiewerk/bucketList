@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.activity;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -21,6 +21,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import ua.aengussong.www.bucketlist.R;
+import ua.aengussong.www.bucketlist.adapters.RVCategoryAdapter;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 
 public class CategoryActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {

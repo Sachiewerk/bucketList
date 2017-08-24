@@ -461,4 +461,8 @@
     <string name="no_access_to_account">Не удалось получить доступ к аккаунту</string>
     <string name="place_finger">Пожалуйста прижмите ваш палец к сканеру что бы идентифицировать вашу личность</string>
     <string name="register_fingerprint">Зарегестрируйте хотя бы один отпечаток пальца что бы обеспечить безопасность данных</string>
+    <string name="notification">Уведомление</string>
+    <string name="notifications">Уведомления</string>
+    <string name="security">Защита</string>
+    <string name="upcoming_wishes">У вас есть предстоящие желания</string>
 </resources>

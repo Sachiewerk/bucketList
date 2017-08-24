@@ -1,5 +1,8 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,12 +34,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import ua.aengussong.www.bucketlist.R;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.Milestone;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 import ua.aengussong.www.bucketlist.utilities.DbBitmapUtility;
 import ua.aengussong.www.bucketlist.utilities.DbQuery;
 
+import static android.support.v4.app.NotificationCompat.DEFAULT_LIGHTS;
+import static android.support.v4.app.NotificationCompat.DEFAULT_SOUND;
+import static android.support.v4.app.NotificationCompat.DEFAULT_VIBRATE;
 import static android.view.View.INVISIBLE;
 import static ua.aengussong.www.bucketlist.utilities.DbQuery.updateMilestone;
 

@@ -48,6 +48,10 @@
     <string name="register_fingerprint">Register at least one fingerprint to secure this app</string>
     <string name="enable_lock">Lock screen security not enabled in smartphone settings</string>
     <string name="fingerprint_failed">Fingerprint authentication failed!</string>
+    <string name="notifications">Notifications</string>
+    <string name="notification">Notification</string>
+    <string name="upcoming_wishes">You have upcoming wishes</string>
+    <string name="security">Security</string>
 
     <string-array name="category_init">
         <item>Travel</item>

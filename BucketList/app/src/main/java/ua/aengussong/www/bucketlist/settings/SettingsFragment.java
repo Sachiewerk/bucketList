@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.settings;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,6 +16,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+
+import ua.aengussong.www.bucketlist.R;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -63,7 +65,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 Toast.makeText(getActivity(), getString(R.string.havent_picked_image), Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            Log.e("sdf", e.toString());
             Toast.makeText(getActivity(), getString(R.string.bad), Toast.LENGTH_SHORT).show();
         }
     }

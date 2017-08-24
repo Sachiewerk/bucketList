@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ua.aengussong.www.bucketlist.SettingsActivity">
+    tools:context="ua.aengussong.www.bucketlist.activity.SettingsActivity">
     <android.support.v7.widget.Toolbar
         android:id="@+id/settings_toolbar"
         android:layout_width="368dp"
@@ -29,7 +29,7 @@
             android:textSize="25sp"/>
     </android.support.v7.widget.Toolbar>
 <fragment android:id="@+id/settings_activity"
-    android:name="ua.aengussong.www.bucketlist.SettingsFragment"
+    android:name="ua.aengussong.www.bucketlist.settings.SettingsFragment"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"

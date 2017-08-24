@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.activity;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -31,7 +31,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import ua.aengussong.www.bucketlist.RVAddMilestoneAdapter.MilestoneViewHolder;
+import ua.aengussong.www.bucketlist.R;
+import ua.aengussong.www.bucketlist.adapters.RVAddMilestoneAdapter;
+import ua.aengussong.www.bucketlist.adapters.RVAddMilestoneAdapter.MilestoneViewHolder;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 import ua.aengussong.www.bucketlist.utilities.BlurBuilder;

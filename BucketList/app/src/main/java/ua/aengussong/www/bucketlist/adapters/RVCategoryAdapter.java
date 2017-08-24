@@ -1,4 +1,4 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import java.util.Random;
 
+import ua.aengussong.www.bucketlist.R;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 
 /**
@@ -25,7 +26,7 @@ public class RVCategoryAdapter extends RecyclerView.Adapter<RVCategoryAdapter.Ca
     private Context context;
     private RVCategoryAdapter.CategoryViewHolder categoryViewHolder;
 
-    RVCategoryAdapter(Context context){
+    public RVCategoryAdapter(Context context){
         this.context = context;
     }
 

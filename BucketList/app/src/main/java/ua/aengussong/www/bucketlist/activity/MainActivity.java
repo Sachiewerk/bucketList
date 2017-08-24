@@ -1,6 +1,9 @@
-package ua.aengussong.www.bucketlist;
+package ua.aengussong.www.bucketlist.activity;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -33,15 +36,12 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -56,7 +56,7 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
-import com.google.api.client.util.IOUtils;
+import com.google.android.gms.maps.model.TileOverlay;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -67,7 +67,6 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -78,17 +77,21 @@ import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
+import ua.aengussong.www.bucketlist.R;
+import ua.aengussong.www.bucketlist.adapters.RVMainAdapter;
 import ua.aengussong.www.bucketlist.database.BucketListContracts;
 import ua.aengussong.www.bucketlist.database.BucketListContracts.WishList;
 import ua.aengussong.www.bucketlist.database.BucketListDBHelper;
+import ua.aengussong.www.bucketlist.notification.AlarmReceiver;
+import ua.aengussong.www.bucketlist.utilities.DatePicker;
 
 public class MainActivity extends AppCompatActivity
         implements RVMainAdapter.WishClickListener, LoaderManager.LoaderCallbacks<Cursor>,
@@ -144,8 +147,12 @@ public class MainActivity extends AppCompatActivity
 
         if(fingerIntent.hasExtra(Intent.EXTRA_TEXT)){
             String text = fingerIntent.getStringExtra(Intent.EXTRA_TEXT);
-            Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+            if(text.equals("notification"))
+                showUpcomingWishes();
+            else
+                Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
         }
+
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
@@ -165,6 +172,8 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
+        startNotification();
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_wishes);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -350,6 +359,34 @@ public class MainActivity extends AppCompatActivity
         refreshBucketAchievedDrawerItem();
         refreshCategoryDrawerItem();
 
+    }
+
+    public void startNotification(){
+
+        Intent alarm = new Intent(this, AlarmReceiver.class);
+        boolean alarmRunning = (PendingIntent.getBroadcast(this, 0, alarm, PendingIntent.FLAG_NO_CREATE) != null);
+        if (!alarmRunning) {
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, alarm, 0);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR, 18);
+            calendar.set(Calendar.MINUTE,0);
+            calendar.set(Calendar.SECOND,0);
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+        }
+    }
+
+    private void showUpcomingWishes(){
+        final Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH) + 1;
+        int day = c.get(Calendar.DAY_OF_MONTH) + 7;
+        //to show upcoming wishes(in week)
+        String upcomingDate = DatePicker.getDateTime(year, month, day);
+
+        selection = WishList.COLUMN_TARGET_DATE + " = ? ";
+        selectionArgs = new String[]{upcomingDate};
+        getSupportLoaderManager().restartLoader(WISH_LOADER_ID, null, MainActivity.this);
     }
 
     private void showRandomInspiration(){
